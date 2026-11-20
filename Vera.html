@@ -1,0 +1,1424 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workspace | VERA</title>
+<style>
+/* Design system: three type sizes, an eight-point spacing rhythm, and semantic colors. */
+:root {
+  color-scheme: light dark;
+  --canvas:#f4f5f1; --paper:#fff; --soft:#f0f4ee; --line:#cdd9d0;
+  --ink:#192b22; --muted:#4d6155; --accent:#24573e; --active:#e4efe6;
+  --hero:#183d30; --on-hero:#f5faf6; --focus:#345bc4;
+  --info:#234a75; --info-bg:#eaf3ff; --success:#20583e; --success-bg:#e8f4ec;
+  --warning:#714200; --warning-bg:#fff3dc; --error:#862d32; --error-bg:#ffefef;
+  --ai:#603c84; --ai-bg:#f3ebfa;
+  --small:.84rem; --body:1rem; --title:clamp(1.65rem,3vw,2.5rem);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  --radius:12px;
+}
+@media (prefers-color-scheme:dark) {
+  :root {
+    --canvas:#121b16; --paper:#1b2920; --soft:#233429; --line:#486051;
+    --ink:#eef6ef; --muted:#c1d1c4; --accent:#a5e1bc; --active:#2b4234;
+    --focus:#b6c9ff; --info:#c0daff; --info-bg:#20354d;
+    --success:#a6e3bc; --success-bg:#243e30; --warning:#ffe0a6; --warning-bg:#44341d;
+    --error:#ffc2c4; --error-bg:#492e33; --ai:#e4cbff; --ai-bg:#3c2c4c;
+  }
+}
+* { box-sizing:border-box; }
+body { margin:0; color:var(--ink); background:var(--canvas); font:var(--body)/1.55 system-ui,sans-serif; }
+button,input,select,textarea { font:inherit; }
+button,select,summary { cursor:pointer; }
+button:disabled { opacity:.61; cursor:not-allowed; }
+:focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
+[hidden] { display:none!important; }
+h1,h2,h3,p { margin:0; }
+h1 { font-size:var(--title); line-height:1.12; letter-spacing:-.035em; }
+h2,h3 { font-size:var(--body); line-height:1.35; }
+small,.eyebrow,.muted.small { font-size:var(--small); }
+p+p { margin-block-start:var(--s2); }
+a { color:var(--accent); text-underline-offset:.18em; }
+.muted { color:var(--muted); }
+.eyebrow { color:var(--accent); font-weight:730; letter-spacing:.07em; text-transform:uppercase; }
+.skip { position:fixed; inset-block-start:var(--s2); inset-inline-start:var(--s2); z-index:30; padding:var(--s3); background:var(--paper); transform:translateY(-150%); }
+.skip:focus { transform:none; }
+
+/* Shell, guided menu, and lab notebook. */
+.topbar { position:sticky; z-index:5; inset-block-start:0; display:flex; align-items:center; justify-content:space-between; gap:var(--s3); padding:var(--s3) var(--s5); border-block-end:1px solid var(--line); background:var(--paper); }
+.brand,.row,.controls,.heading { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2); }
+.brand { min-height:44px; padding:0; background:transparent; color:var(--ink); border:0; font-weight:800; letter-spacing:.08em; }
+.brand-mark { display:grid; place-items:center; width:42px; height:42px; border-radius:var(--radius); background:var(--hero); color:var(--on-hero); }
+.controls { justify-content:flex-end; }
+.controls label { font-size:var(--small); }
+.controls [data-act="notebook"] { display:none; }
+.shell { max-width:1660px; margin-inline:auto; display:grid; grid-template-columns:230px minmax(0,1fr) 256px; min-height:calc(100vh - 70px); }
+.sidebar,.notebook { position:sticky; align-self:start; inset-block-start:69px; max-height:calc(100dvh - 69px); overflow:auto; padding:var(--s5) var(--s4); }
+.sidebar { border-inline-end:1px solid var(--line); }
+.notebook { border-inline-start:1px solid var(--line); }
+.nav-title { padding-inline:var(--s2); color:var(--muted); font-size:var(--small); font-weight:750; }
+.nav-group { margin-block:var(--s4); }
+.nav-group h2 { margin-block-end:var(--s1); }
+.step { display:grid; grid-template-columns:26px minmax(0,1fr) auto; gap:var(--s2); align-items:center; width:100%; min-height:44px; padding:var(--s1) var(--s2); border:1px solid transparent; background:transparent; color:var(--ink); text-align:start; border-radius:8px; font-size:var(--small); position:relative; }
+.step[aria-current],.step:hover { background:var(--active); }
+.step[aria-current] { border-color:var(--line); font-weight:750; }
+.step small { color:var(--muted); }
+.step-mark { width:25px; height:25px; display:grid; place-items:center; background:var(--paper); border:1px solid var(--line); border-radius:50%; }
+.step[aria-current] .step-mark { background:var(--hero); color:var(--on-hero); }
+.nav-group .step:not(:last-child)::after { content:""; position:absolute; inset-inline-start:21px; inset-block-start:calc(50% + 13px); block-size:calc(50% - 4px); border-inline-start:1px solid var(--line); pointer-events:none; }
+.nav-progress { margin:var(--s2); }
+.notebook-head { display:flex; align-items:center; gap:var(--s3); margin-block-end:var(--s4); }
+.notebook-head .mark { background:var(--active); padding:var(--s2) var(--s3); border-radius:8px; }
+.log { list-style:none; margin:0; padding:0; display:grid; gap:var(--s2); }
+.entry { background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:var(--s3); overflow-wrap:anywhere; font-size:var(--small); }
+.entry time { display:block; color:var(--muted); }
+
+/* Inputs, cards, data display, and feedback. */
+main { min-width:0; padding:var(--s6) clamp(var(--s4),3vw,var(--s7)) var(--s7); }
+.stack { display:grid; gap:var(--s4); }
+.page,.card,.hero-copy { display:grid; gap:var(--s3); }
+.page p,.card>p { max-width:76ch; }
+.heading { justify-content:space-between; }
+.grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s3); }
+.three { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.card { min-width:0; padding:var(--s4); background:var(--paper); border:1px solid var(--line); border-radius:var(--radius); }
+.hero { display:grid; grid-template-columns:minmax(0,1fr) minmax(140px,27%); gap:var(--s5); align-items:center; background:var(--hero); color:var(--on-hero); padding:var(--s6); border-radius:16px; }
+.hero .eyebrow,.hero .muted { color:#c9e5d3; }
+.hero .primary { background:#e4f3e7; border-color:#e4f3e7; color:#173d30; }
+.hero .secondary { color:var(--on-hero); background:transparent; border-color:#a7c3b4; }
+.hero-study { display:grid; gap:var(--s2); border:1px solid #91b4a1; border-radius:var(--radius); padding:var(--s4); background:#244e3e; }
+.task-list { margin:0; padding:0; list-style:none; }
+.task-list li { display:grid; justify-items:start; gap:var(--s1); padding-block:var(--s2); border-block-start:1px solid var(--line); }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:var(--s2); min-height:44px; padding:var(--s2) var(--s3); border:1px solid var(--line); border-radius:8px; background:var(--paper); color:var(--ink); font-weight:690; font-size:var(--small); }
+.btn:hover:enabled { box-shadow:inset 0 0 0 1px currentColor; }
+.primary { color:var(--on-hero); background:var(--hero); border-color:var(--hero); }
+.ghost { background:transparent; color:var(--accent); border-color:transparent; }
+.danger { color:var(--error); background:var(--error-bg); border-color:currentColor; }
+.pill { display:inline-flex; align-items:center; gap:var(--s1); padding:var(--s1) var(--s2); border-radius:6px; font-size:var(--small); font-weight:700; color:var(--muted); background:var(--soft); }
+.alert { display:grid; grid-template-columns:20px minmax(0,1fr); gap:var(--s2); padding:var(--s3) var(--s4); border-inline-start:3px solid currentColor; border-radius:8px; }
+.info { color:var(--info); background:var(--info-bg); }
+.success { color:var(--success); background:var(--success-bg); }
+.warning { color:var(--warning); background:var(--warning-bg); }
+.error { color:var(--error); background:var(--error-bg); }
+.ai { color:var(--ai); background:var(--ai-bg); }
+.field { display:grid; gap:var(--s1); align-content:start; font-weight:650; min-width:0; }
+input,select,textarea { min-height:44px; max-width:100%; border:1px solid var(--line); border-radius:8px; padding:var(--s2) var(--s3); background:var(--paper); color:var(--ink); }
+textarea { resize:vertical; }
+.field :is(input,select,textarea) { width:100%; }
+fieldset { min-inline-size:0; border:1px solid var(--line); border-radius:8px; padding:var(--s3); margin:0; }
+legend { font-weight:730; }
+.radio { display:flex; align-items:center; gap:var(--s2); min-height:44px; cursor:pointer; }
+input[type="radio"] { accent-color:var(--accent); width:18px; height:18px; min-height:0; flex:none; }
+.drop { justify-items:center; text-align:center; padding:var(--s6); background:var(--soft); border:2px dashed var(--line); }
+.drop.dragging,.drop:hover { border-color:var(--accent); }
+.table-wrap { overflow:auto; border:1px solid var(--line); border-radius:8px; }
+table { width:100%; border-collapse:collapse; font-size:var(--small); background:var(--paper); }
+th,td { padding:var(--s2) var(--s3); text-align:start; vertical-align:top; border-block-end:1px solid var(--line); }
+th { background:var(--soft); }
+tbody tr:last-child>* { border-block-end:0; }
+.metric { display:grid; gap:var(--s1); padding:var(--s3); background:var(--soft); border-radius:8px; }
+.metric strong { font-size:var(--title); line-height:1; font-variant-numeric:tabular-nums; }
+details { padding-inline:var(--s3); border:1px solid var(--line); border-radius:8px; background:var(--paper); }
+details[open] { padding-block-end:var(--s3); }
+summary { min-height:44px; padding-block:var(--s2); align-content:center; color:var(--accent); font-weight:700; }
+summary+* { margin-block-start:var(--s2); }
+.term { position:relative; text-decoration:underline dotted; text-underline-offset:3px; cursor:help; }
+.term:is(:hover,:focus-visible)::after { content:attr(data-definition); position:absolute; z-index:8; inset-block-start:100%; inset-inline-start:0; width:min(235px,70vw); padding:var(--s2) var(--s3); background:var(--hero); color:var(--on-hero); border-radius:8px; font-size:var(--small); font-weight:500; box-shadow:0 8px 20px #172c2455; }
+progress { width:100%; accent-color:var(--accent); }
+.bar { display:grid; grid-template-columns:minmax(72px,auto) minmax(40px,1fr) auto; align-items:center; gap:var(--s2); font-size:var(--small); }
+.track { height:10px; border-radius:10px; background:var(--line); overflow:hidden; }
+.fill { display:block; height:100%; background:var(--accent); }
+.checklist { list-style:none; margin:0; padding:0; font-size:var(--small); }
+.checklist li { margin-block:var(--s1); }
+.step-footer { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:var(--s2); padding-block-start:var(--s4); border-block-start:1px solid var(--line); }
+blockquote { margin:0; padding-inline-start:var(--s3); border-inline-start:3px solid var(--line); }
+pre { margin:0; max-height:58vh; padding:var(--s3); background:var(--soft); border-radius:8px; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; direction:ltr; }
+dialog { width:min(575px,calc(100% - 28px)); max-height:calc(100dvh - 28px); padding:var(--s5); color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:var(--radius); }
+dialog::backdrop { background:#12281e88; }
+dialog.drawer { inset:0; inset-inline-start:auto; margin:0; width:min(435px,100%); height:100dvh; max-width:none; max-height:none; border-radius:0; }
+.dialog-content { margin-block-start:var(--s4); }
+.toasts { position:fixed; inset-block-end:var(--s4); inset-inline-end:var(--s4); z-index:10; width:min(395px,calc(100% - 32px)); display:grid; gap:var(--s2); pointer-events:none; }
+.toasts>* { box-shadow:0 6px 20px #14241d37; }
+body[data-mode="expert"] :is(.card,.entry) { padding:var(--s3); }
+body[data-mode="expert"] .stack { gap:var(--s3); }
+[dir="rtl"] :is(h1,.eyebrow,.brand) { letter-spacing:normal; }
+[dir="rtl"] .direction { display:inline-block; transform:scaleX(-1); }
+@media (max-width:1130px) {
+  .shell { grid-template-columns:195px minmax(0,1fr) 215px; }
+  main { padding-inline:var(--s5); }
+}
+@media (max-width:920px) {
+  .shell { grid-template-columns:175px minmax(0,1fr); }
+  .notebook { grid-column:2; position:static; max-height:none; border-inline-start:0; border-block-start:1px solid var(--line); }
+  .controls [data-act="notebook"] { display:inline-flex; }
+}
+@media (max-width:640px) {
+  .topbar { position:static; flex-wrap:wrap; padding:var(--s2) var(--s3); }
+  .controls { justify-content:flex-start; }
+  .shell { display:block; }
+  .sidebar { position:static; padding:var(--s2) var(--s3); border-inline:0; border-block-end:1px solid var(--line); }
+  .step-strip { display:flex; gap:var(--s2); align-items:flex-start; overflow-x:auto; padding-block-end:var(--s2); }
+  .nav-group { display:flex; align-items:center; gap:var(--s2); margin:0; }
+  .nav-group h2,.nav-progress,.nav-caption { display:none; }
+  .step { width:auto; white-space:nowrap; flex:none; }
+  .nav-group .step::after { display:none; }
+  .preferences { display:flex; flex-wrap:wrap; gap:var(--s2); align-items:center; margin-block-start:var(--s2); }
+  main,.notebook { padding:var(--s5) var(--s3); }
+  .hero { grid-template-columns:1fr; padding:var(--s5); }
+  .grid,.grid.three { grid-template-columns:1fr; }
+  .grid.metrics { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .metrics .metric { padding:var(--s2); }
+}
+@media (prefers-reduced-motion:reduce) {
+  *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#workspace">Skip to main content</a>
+<header id="topbar" class="topbar"></header>
+<div class="shell">
+  <aside id="sidebar" class="sidebar"></aside>
+  <main id="workspace" tabindex="-1"></main>
+  <aside id="notebook" class="notebook" aria-label="Decision log"></aside>
+</div>
+<dialog id="dialog" aria-labelledby="dialog-title"></dialog>
+<div id="toasts" class="toasts" aria-live="polite" aria-atomic="false"></div>
+
+<script>
+'use strict';
+
+/* Vocabulary, interface primitives, and in-memory workspace. */
+const $ = id => document.getElementById(id);
+const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({
+  '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+})[character]);
+const clone = value => structuredClone(value);
+const steps = ['Workspace','Upload dataset','Study declaration','Declaration check','Data preparation',
+  'Analysis options','Method override','Methodological question','Final specification','Results','Qualitative coding'];
+const phases = [['Study setup',1,2,3],['Method and decisions',4,5,6,7],['Run and review',8,9,10]];
+const roles = {researcher:'Researcher',verifier:'Verifier',administrator:'Administrator'};
+const arabic = {
+  Workspace:'مساحة العمل','Research overview':'نظرة عامة على البحث',Researcher:'الباحث',
+  Verifier:'المحقق',Administrator:'المسؤول',Role:'الدور',Prototype:'نموذج أولي',
+  'Upload dataset':'رفع مجموعة البيانات','Study declaration':'تصريح الدراسة',
+  'Declaration check':'التحقق من التصريح','Data preparation':'إعداد البيانات',
+  'Analysis options':'خيارات التحليل','Method override':'تجاوز المنع',
+  'Methodological question':'سؤال منهجي','Final specification':'المواصفات النهائية',
+  Results:'النتائج','Qualitative coding':'الترميز النوعي','Study setup':'إعداد الدراسة',
+  'Method and decisions':'المنهج والقرارات','Run and review':'التنفيذ والمراجعة',
+  'Decision log':'سجل القرارات','Lab notebook':'دفتر المختبر',Help:'مساعدة',
+  'Quick-start':'دليل البدء','Getting started':'البدء','Ask VERA assistant':'اسأل مساعد فيرا',
+  'Design rationale':'مبررات التصميم',Guidance:'الإرشاد',Explanations:'الشروحات',
+  Novice:'مبتدئ',Expert:'خبير',Plain:'مبسّط',Detailed:'مفصّل',Back:'رجوع',
+  Continue:'متابعة',Close:'إغلاق',Done:'مكتمل',Current:'الحالي',Ready:'متاح',Locked:'مغلق',
+  'Load sample dataset':'تحميل البيانات التجريبية','Start guided analysis':'بدء التحليل الموجّه',
+  'Run analysis':'تنفيذ التحليل','Analysis tasks':'مهام التحليل',
+  'Independent verification':'التحقق المستقل',Administration:'الإدارة'
+};
+const emptyDeclaration = () => ({goal:'',design:'',group:'',groupLevel:'',outcome:'',outcomeLevel:''});
+const emptyWork = () => ({
+  declaration:emptyDeclaration(), drafted:false, confirmed:false, reconciled:false,
+  prep:{}, prepApproved:false, method:null, methodApproved:false, override:null,
+  warning:'pause', independence:null, independenceReason:'', finalApproved:false,
+  result:null, record:null, summary:false
+});
+const app = {
+  role:'researcher', step:0, lang:'en', mode:'novice', detail:'plain',
+  dataset:null, profile:null, profiling:false, progress:0, work:emptyWork(),
+  log:[], codes:{}, undo:null, chat:[], tour:0
+};
+const t = label => app.lang === 'ar' ? arabic[label] || label : label;
+const glossary = {
+  dataset:'A table of observations, with variables in columns.',
+  categorical:'Values identify categories, such as teaching methods.',
+  continuous:'Values are numeric and differences on the measurement scale are meaningful.',
+  ordinal:'Values have a meaningful order, even when gaps between levels differ.',
+  outcome:'The measure the study aims to explain or compare.',
+  group:'A variable indicating which group an observation belongs to.',
+  design:'How observations were collected and how study groups were formed.',
+  missing:'A value that was not recorded or is unavailable.',
+  median:'The middle value when scores are ordered.',
+  mean:'The arithmetic average.',
+  exclusions:'Observations removed from the working data according to a recorded rule.',
+  filter:'A condition that determines which rows are in scope.',
+  iqr:'The distance between the lower and upper quartiles, spanning the middle half of the distribution.',
+  independence:'Observations may be related when a participant is measured twice or participants share a relevant cluster, such as a classroom.',
+  kw:'A rank-based test that compares distributions across independent groups.',
+  anova:'Analysis of variance. One-way ANOVA compares group means under model assumptions.',
+  normality:'The assumption concerns the shape of model errors within groups. This prototype screens for asymmetry.',
+  skewness:'The degree of asymmetry in a distribution. Positive skewness indicates a longer right tail.',
+  variance:'A measure of how spread out scores are around their average.',
+  statistic:'A number calculated from the data to evaluate the study question.',
+  df:'Degrees of freedom describe the independent information available for a calculation.',
+  p:'Under the null model and assumptions, the probability of a test statistic at least as extreme as the observed one.',
+  code:'A short label attached to a source text segment to describe an idea.'
+};
+const references = {
+  kw:['Kruskal & Wallis (1952)','https://doi.org/10.1080/01621459.1952.10483441'],
+  anova:['NIST · One-way ANOVA','https://www.itl.nist.gov/div898/handbook/prc/section4/prc432.htm'],
+  design:['Penn State · Experimental design','https://online.stat.psu.edu/stat503/']
+};
+const ref = key => `<a href="${references[key][1]}" target="_blank" rel="noopener noreferrer">${references[key][0]} ↗</a>`;
+const term = (label,key) => `<span class="term" tabindex="0" data-definition="${esc(glossary[key])}" aria-label="${esc(`${label}. ${glossary[key]}`)}">${esc(label)}</span>`;
+const methodName = method => ({kw:'Kruskal–Wallis',anova:'One-way ANOVA'})[method] || 'No method selected';
+const aiBadge = '<span class="pill ai"><span aria-hidden="true">✦</span> AI-suggested, needs your confirmation</span>';
+const pill = (text,type='') => `<span class="pill ${type}">${esc(t(text))}</span>`;
+const row = (...children) => `<div class="row">${children.join('')}</div>`;
+const card = (title,content) => `<section class="card"><h2>${title}</h2>${content}</section>`;
+const symbols = {info:'ⓘ',success:'✓',warning:'⚠',error:'×'};
+const alert = (type,title,body) => `<div class="alert ${type}"><span aria-hidden="true">${symbols[type]}</span><div><strong>${type[0].toUpperCase()+type.slice(1)} · ${esc(title)}</strong><div>${body}</div></div></div>`;
+function button(label,action,options={}) {
+  const {kind='primary',value,disabled=false,mark=''} = options;
+  return `<button type="button" class="btn ${kind}" data-act="${esc(action)}"${value===undefined?'':` data-value="${esc(value)}"`}${disabled?' disabled':''}>${mark?`<span class="direction" aria-hidden="true">${mark}</span>`:''}${esc(t(label))}</button>`;
+}
+const secondary = (label,action,value,disabled=false) => button(label,action,{kind:'secondary',value,disabled});
+const options = (items,selected) => items.map(([value,label]) =>
+  `<option value="${esc(value)}"${value===selected?' selected':''}>${esc(t(label))}</option>`).join('');
+const table = (head,rows) => `<div class="table-wrap" tabindex="0" role="region" aria-label="${esc(head[0])} table"><table><thead><tr>${head.map(label=>`<th scope="col">${label}</th>`).join('')}</tr></thead><tbody>${rows.map(cells=>`<tr>${cells.map((cell,index)=>index===0?`<th scope="row">${cell}</th>`:`<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+const metrics = items => `<div class="grid three metrics">${items.map(([value,label])=>`<div class="metric"><strong>${esc(value)}</strong><small>${label}</small></div>`).join('')}</div>`;
+function page(title,description,step) {
+  return `<header class="page">${step?`<span class="eyebrow">${app.lang==='ar'?'الخطوة':'Step'} ${step} / 10</span>`:''}<h1 id="page-heading" tabindex="-1">${esc(t(title))}</h1><p class="muted">${description}</p></header>`;
+}
+function footer(back,next,label='Continue',disabled=false) {
+  return `<footer class="step-footer">${button('Back','go',{kind:'secondary',value:back,mark:'←'})}${next===null?'':button(label,'go',{value:next,disabled,mark:'→'})}</footer>`;
+}
+const format = (number,digits=2) => Number.isFinite(number) ? number.toFixed(digits) : '—';
+const software = Object.freeze({engine:'vera-demo/1.0',alpha:.05,distributions:'Chi-square and F reference distributions',
+  normalityScreen:'Maximum absolute within-group skewness ≤ 1',varianceScreen:'Largest to smallest within-group variance ratio ≤ 4'});
+
+/* Deterministic source data, CSV parsing, profiling, and preparation. */
+function dataset(name,headers,rows,sample=false) {
+  const canonical = JSON.stringify([headers,rows.map(item=>headers.map(key=>item[key]))]);
+  let fingerprint = 0xcbf29ce484222325n;
+  for (const character of canonical) {
+    fingerprint = BigInt.asUintN(64,(fingerprint ^ BigInt(character.codePointAt(0))) * 0x100000001b3n);
+  }
+  return {name,headers,rows,sample,id:`vera-${fingerprint.toString(16).padStart(16,'0')}`};
+}
+function sampleDataset() {
+  const groups = ['Lecture','Hybrid','Flipped'];
+  const missing = new Set([8,34,47,74]);
+  const headers = ['student_id','teaching_method','stress_score'];
+  const rows = Array.from({length:90},(_,index)=>{
+    const group = Math.floor(index/30);
+    const position = (index*17+3)%30;
+    const score = 18+group*6+Math.round(43*(position/29)**4)+position%3;
+    return {student_id:index+1,teaching_method:groups[group],stress_score:missing.has(index)?null:score};
+  });
+  return dataset('Teaching methods and student stress.csv',headers,rows,true);
+}
+function parseCSV(input,name) {
+  const records = [];
+  let fields = [], field = '', quoted = false, closed = false;
+  function endField() { fields.push(field); field=''; closed=false; }
+  function endRow() {
+    endField();
+    if (fields.length>1 || fields[0].trim()) records.push(fields);
+    fields=[];
+  }
+  input=input.replace(/^\uFEFF/,'');
+  for (let index=0;index<input.length;index++) {
+    const ch=input[index];
+    if (quoted) {
+      if (ch!=='"') field+=ch;
+      else if (input[index+1]==='"') { field+='"'; index++; }
+      else { quoted=false; closed=true; }
+    } else if (ch===',') endField();
+    else if (ch==='\r' || ch==='\n') {
+      if (ch==='\r' && input[index+1]==='\n') index++;
+      endRow();
+    } else if (closed) {
+      if (!/\s/.test(ch)) throw Error('Add a comma after the quoted field.');
+    } else if (ch==='"') {
+      if (field.trim()) throw Error('Put double quotes around the entire field.');
+      field=''; quoted=true;
+    } else field+=ch;
+  }
+  if (quoted) throw Error('A quoted field is missing its closing quote.');
+  if (fields.length || field || closed) endRow();
+  const [heading,...body] = records;
+  if (!heading || heading.length<2 || !body.length) throw Error('Include a header row and data for at least two columns.');
+  const headers = heading.map(value=>value.trim());
+  if (headers.some(key=>!key) || new Set(headers).size!==headers.length) throw Error('Give each column a unique, nonempty header.');
+  function cell(raw) {
+    const value=raw.trim();
+    if (!value || /^(NA|N\/A|NULL)$/i.test(value)) return null;
+    const numeric=/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(value);
+    return numeric && !/^[+-]?0\d+$/.test(value) && Number.isFinite(Number(value)) ? Number(value) : value;
+  }
+  const rows=body.map((values,index)=>{
+    if (values.length!==headers.length) throw Error(`Row ${index+2} has ${values.length} cells. The header has ${headers.length}.`);
+    return Object.fromEntries(headers.map((key,column)=>[key,cell(values[column])]));
+  });
+  return dataset(name,headers,rows);
+}
+function toCSV(source) {
+  const encode=value=>value===null?'':`"${String(value).replace(/"/g,'""')}"`;
+  return [source.headers,...source.rows.map(item=>source.headers.map(key=>item[key]))]
+    .map(line=>line.map(encode).join(',')).join('\r\n');
+}
+function profile(source) {
+  const columns=source.headers.map(name=>{
+    const values=source.rows.map(item=>item[name]).filter(value=>value!==null);
+    const distinct=[...new Set(values)];
+    const smallIntegerScale=distinct.length<=3 && distinct.length<values.length && distinct.every(Number.isInteger);
+    const type=!values.length?'empty':values.every(Number.isFinite)&&!smallIntegerScale?'continuous':'categorical';
+    return {name,type,missing:source.rows.length-values.length,unique:distinct.length,examples:distinct.slice(0,3)};
+  });
+  return {
+    columns, rows:source.rows.length, missing:columns.reduce((sum,c)=>sum+c.missing,0),
+    groups:columns.find(c=>c.type==='categorical'&&c.unique>=2&&c.unique<=12)?.unique ?? null
+  };
+}
+function quantile(values,fraction) {
+  const sorted=[...values].sort((a,b)=>a-b);
+  const position=(sorted.length-1)*fraction, start=Math.floor(position);
+  return sorted[start]+(sorted[Math.ceil(position)]-sorted[start])*(position-start);
+}
+const average = values => values.reduce((sum,value)=>sum+value,0)/values.length;
+function inspect(source,declaration,prep) {
+  const {group,outcome,design,groupLevel,outcomeLevel}=declaration;
+  const issues=[], grouped=new Map();
+  let imputed=0, missing=0, noGroup=0;
+  for (const item of source.rows) {
+    const name=item[group], value=item[outcome];
+    if (name===null || value===null) missing++;
+    if (name===null) { noGroup++; continue; }
+    const key=String(name);
+    if (!grouped.has(key)) grouped.set(key,[]);
+    grouped.get(key).push(value);
+  }
+  if (noGroup && prep.filter!=='valid') issues.push('Some rows have no group. Record the filter that keeps rows with a group.');
+  const groups=[...grouped].map(([name,values])=>{
+    const observed=values.filter(Number.isFinite);
+    if (values.some(value=>value!==null&&!Number.isFinite(value))) issues.push(`Group ${name} has nonnumeric outcome values. Supply numeric scores or ranks.`);
+    let scores=observed;
+    if (observed.length && prep.missing==='median') {
+      const blanks=values.filter(value=>value===null).length;
+      imputed+=blanks;
+      scores=[...observed,...Array(blanks).fill(quantile(observed,.5))];
+    }
+    if (observed.length && prep.exclusions==='extreme') {
+      const low=quantile(observed,.25), high=quantile(observed,.75), span=high-low;
+      if (span>0) scores=scores.filter(value=>value>=low-3*span&&value<=high+3*span);
+    }
+    const n=scores.length, mean=n?average(scores):null;
+    const spread=n?average(scores.map(value=>(value-mean)**2)):0;
+    const skew=spread?average(scores.map(value=>(value-mean)**3))/spread**1.5:0;
+    return {name,scores,n,mean,median:n?quantile(scores,.5):null,skew,variance:n>1?spread*n/(n-1):null};
+  });
+  const n=groups.reduce((sum,g)=>sum+g.n,0);
+  if (design!=='independent') issues.push('These methods require a study with independent groups.');
+  if (!['categorical','ordinal'].includes(groupLevel)) issues.push('Use a categorical or ordinal grouping variable.');
+  if (!['continuous','ordinal'].includes(outcomeLevel)) issues.push('Use a numeric outcome declared continuous or ordinal.');
+  if (groups.length<2) issues.push('At least two observed groups are required.');
+  if (groups.some(g=>g.n<3)) issues.push('The prototype requires at least three usable scores in each group.');
+  if (n && new Set(groups.flatMap(g=>g.scores)).size<2) issues.push('The outcome needs at least two distinct scores.');
+  const maxSkew=Math.max(0,...groups.map(g=>Math.abs(g.skew)));
+  const variances=groups.map(g=>g.variance??0);
+  const minimum=variances.length?Math.min(...variances):0;
+  const varianceRatio=minimum>0?Math.max(...variances)/minimum:null;
+  const kwPass=!issues.length;
+  const variancePass=varianceRatio!==null&&varianceRatio<=4;
+  const anovaPass=kwPass&&outcomeLevel==='continuous'&&variancePass&&maxSkew<=1;
+  const overrideAllowed=kwPass&&outcomeLevel==='continuous'&&variancePass&&maxSkew>1;
+  return {groups,n,missing,imputed,excluded:source.rows.length-n,issues,kwPass,anovaPass,overrideAllowed,maxSkew,varianceRatio};
+}
+
+/* Execution Engine: tie-corrected ranks and ordinary one-way ANOVA. */
+function logGamma(value) {
+  const coefficients=[676.5203681218851,-1259.1392167224028,771.3234287776531,
+    -176.6150291621406,12.5073432786869,-.1385710952657201,.00000998436957802,.00000015056327351];
+  if (value<.5) return Math.log(Math.PI/Math.sin(Math.PI*value))-logGamma(1-value);
+  const shift=value-1, term=shift+7.5;
+  const sum=coefficients.reduce((total,c,index)=>total+c/(shift+index+1),.9999999999998099);
+  return .5*Math.log(2*Math.PI)+(shift+.5)*Math.log(term)-term+Math.log(sum);
+}
+function chiSquareTail(statistic,df) {
+  if (statistic<=0) return 1;
+  const a=df/2, x=statistic/2, scale=Math.exp(a*Math.log(x)-x-logGamma(a));
+  if (x<a+1) {
+    let item=1/a, sum=item;
+    for (let i=1;i<=200;i++) {
+      item*=x/(a+i); sum+=item;
+      if (Math.abs(item)<Math.abs(sum)*1e-13) break;
+    }
+    return 1-sum*scale;
+  }
+  let b=x+1-a, c=1e30, d=1/b, fraction=d;
+  for (let i=1;i<=200;i++) {
+    const item=-i*(i-a);
+    b+=2; d=1/(item*d+b||1e-30); c=b+item/c||1e-30;
+    const delta=d*c;
+    fraction*=delta;
+    if (Math.abs(delta-1)<1e-13) break;
+  }
+  return fraction*scale;
+}
+function betaFraction(a,b,x) {
+  const nonzero=value=>Math.abs(value)<1e-30?1e-30:value;
+  const sum=a+b;
+  let c=1, d=1/nonzero(1-sum*x/(a+1)), fraction=d;
+  for (let i=1;i<=200;i++) {
+    const even=2*i;
+    let item=i*(b-i)*x/((a+even-1)*(a+even));
+    d=1/nonzero(1+item*d); c=nonzero(1+item/c); fraction*=d*c;
+    item=-(a+i)*(sum+i)*x/((a+even)*(a+even+1));
+    d=1/nonzero(1+item*d); c=nonzero(1+item/c);
+    const delta=d*c;
+    fraction*=delta;
+    if (Math.abs(delta-1)<1e-13) break;
+  }
+  return fraction;
+}
+function beta(x,a,b) {
+  if (x<=0 || x>=1) return x<=0?0:1;
+  const scale=Math.exp(logGamma(a+b)-logGamma(a)-logGamma(b)+a*Math.log(x)+b*Math.log1p(-x));
+  return x<(a+1)/(a+b+2)?scale*betaFraction(a,b,x)/a:1-scale*betaFraction(b,a,1-x)/b;
+}
+function rankResult(groups,n,df) {
+  const ranked=groups.flatMap(group=>group.scores.map(value=>({name:group.name,value}))).sort((a,b)=>a.value-b.value);
+  const rankSums=new Map(groups.map(group=>[group.name,0]));
+  let ties=0, start=0;
+  while (start<n) {
+    let end=start+1;
+    while (end<n && ranked[end].value===ranked[start].value) end++;
+    const rank=(start+1+end)/2, count=end-start;
+    for (let index=start;index<end;index++) {
+      const name=ranked[index].name;
+      rankSums.set(name,rankSums.get(name)+rank);
+    }
+    ties+=count**3-count;
+    start=end;
+  }
+  const sum=groups.reduce((total,g)=>total+rankSums.get(g.name)**2/g.n,0);
+  const statistic=Math.max(0,(12*sum/(n*(n+1))-3*(n+1))/(1-ties/(n**3-n)));
+  return {label:'H',statistic,df,df2:null,p:chiSquareTail(statistic,df)};
+}
+function anovaResult(groups,n,df) {
+  const grandMean=groups.reduce((sum,g)=>sum+g.n*g.mean,0)/n;
+  const between=groups.reduce((sum,g)=>sum+g.n*(g.mean-grandMean)**2,0);
+  const within=groups.reduce((sum,g)=>sum+(g.n-1)*g.variance,0);
+  const df2=n-groups.length, statistic=(between/df)/(within/df2);
+  return {label:'F',statistic,df,df2,p:beta(df2/(df2+df*statistic),df2/2,df/2)};
+}
+
+/* Assumption Gate and Record Service. */
+const prepLabels={missing:'Missing values',exclusions:'Exclusions',filter:'Filters'};
+const choices={
+  missing:[['complete','Use rows with observed outcomes'],['median','Fill missing outcomes with the group median']],
+  exclusions:[['retain','Retain all observed scores'],['extreme','Exclude scores beyond the extreme-value fences']],
+  filter:[['all','Keep all rows in scope'],['valid','Keep only rows with a recorded group']]
+};
+const prepName=(key,value)=>choices[key].find(([option])=>option===value)?.[1]||'Unresolved';
+const prepValid=prep=>Object.entries(choices).every(([key,items])=>items.some(([value])=>value===prep?.[key]));
+const gate=()=>inspect(app.dataset,app.work.declaration,app.work.prep);
+function permits(method,diagnostics,override,warning) {
+  if (method==='kw') return diagnostics.kwPass;
+  return method==='anova'&&(diagnostics.anovaPass||
+    (diagnostics.overrideAllowed&&warning==='continue'&&typeof override?.reason==='string'&&override.reason.trim().length>=12));
+}
+function execute(source,spec) {
+  const d=spec?.declaration;
+  const approved=['declaration','reconciliation','preparation','method','final'].every(key=>spec?.approved?.[key]===true);
+  if (!source || !d?.goal?.trim() || !source.headers.includes(d.group) || !source.headers.includes(d.outcome) ||
+      d.group===d.outcome || !approved || !prepValid(spec.prep) || spec.independence!=='yes' ||
+      typeof spec.independenceReason!=='string' || !spec.independenceReason.trim()) {
+    throw Error('The specification requires a declaration, three preparation choices, independence, and all approvals.');
+  }
+  const evidence=inspect(source,d,spec.prep);
+  if (!permits(spec.method,evidence,spec.override,spec.warning)) {
+    throw Error(evidence.issues[0]||'The method has an unresolved assumption or warning.');
+  }
+  const df=evidence.groups.length-1;
+  const result=spec.method==='kw'?rankResult(evidence.groups,evidence.n,df):anovaResult(evidence.groups,evidence.n,df);
+  if (!Number.isFinite(result.statistic)||!Number.isFinite(result.p)) throw Error('The calculation exceeded the supported range. Review the outcome scale.');
+  const diagnostics={...evidence,groups:evidence.groups.map(({scores,...group})=>group)};
+  return {...result,p:Math.max(0,Math.min(1,result.p)),method:spec.method,n:evidence.n,diagnostics};
+}
+function flags() {
+  const d=app.work.declaration;
+  return [['group','groupLevel'],['outcome','outcomeLevel']].flatMap(([role,key])=>{
+    const column=app.profile?.columns.find(item=>item.name===d[role]);
+    if (!column) return [];
+    const categoryMismatch=d[key]==='continuous'&&(role==='group'||column.type!=='continuous');
+    const numericMismatch=role==='outcome'&&d[key]==='categorical'&&column.type==='continuous';
+    if (!categoryMismatch&&!numericMismatch) return [];
+    const fix=categoryMismatch?'categorical':'continuous';
+    return [{key,fix,message:`${column.name} has ${column.unique} observed values and profiles as ${column.type}. You declared it ${d[key]}.`}];
+  });
+}
+function readiness() {
+  const w=app.work;
+  return [
+    ['Dataset loaded and profiled',!!app.profile],['Declaration confirmed',w.confirmed],['Declaration and data reconciled',w.reconciled&&!flags().length],
+    ['Missing values, exclusions, and filters recorded',prepValid(w.prep)],['Dataset changes approved',w.prepApproved],['Method explicitly approved',w.methodApproved],
+    ['Assumption gate cleared or warning acknowledged',!!w.method&&w.prepApproved&&permits(w.method,gate(),w.override,w.warning)],
+    ['Independent observations confirmed',w.independence==='yes'],['Final settings approved',w.finalApproved]
+  ];
+}
+const canRun=()=>!app.progress&&readiness().every(([,ready])=>ready);
+function specSnapshot() {
+  const w=app.work;
+  return clone({declaration:w.declaration,prep:w.prep,method:w.method,override:w.override,
+    warning:w.warning,independence:w.independence,independenceReason:w.independenceReason,
+    approved:{declaration:w.confirmed,reconciliation:w.reconciled,preparation:w.prepApproved,method:w.methodApproved,final:w.finalApproved}});
+}
+function makeRecord(source,specification,results,decisions) {
+  return clone({schema:'vera.analysis/v1',createdAt:new Date().toISOString(),
+    dataset:{name:source.name,id:source.id,rows:source.rows.length,columns:source.headers,sample:source.sample},
+    specification,software,diagnostics:results.diagnostics,results,decisions,qualitative:[]});
+}
+function same(a,b) {
+  if (a===b) return true;
+  if (!a||!b||typeof a!=='object'||typeof b!=='object'||Array.isArray(a)!==Array.isArray(b)) return false;
+  const keys=Object.keys(a);
+  return keys.length===Object.keys(b).length&&keys.every(key=>Object.hasOwn(b,key)&&same(a[key],b[key]));
+}
+function replay(source,record) {
+  if (record?.schema!=='vera.analysis/v1'||!Array.isArray(record.decisions)||!record.results||!record.diagnostics) {
+    throw Error('Choose a complete VERA analysis JSON record.');
+  }
+  if (record.dataset?.id!==source.id||record.dataset.rows!==source.rows.length||!same(record.dataset.columns,source.headers)) {
+    throw Error('The loaded dataset identity differs from the reference.');
+  }
+  if (!same(record.software,software)) throw Error('The reference uses different software settings.');
+  if (!record.decisions.every(entry=>entry&&['actor','area','choice','reason','timestamp'].every(key=>typeof entry[key]==='string'&&entry[key].trim()))) {
+    throw Error('The reference has an incomplete decision entry.');
+  }
+  return execute(source,record.specification);
+}
+function currentRecord() {
+  if (!app.work.record) return null;
+  return {...clone(app.work.record),
+    decisions:clone(app.log.filter(entry=>entry.actor==='researcher'&&
+      (entry.datasetId===app.work.record.dataset.id||entry.area==='Qualitative coding'))),
+    qualitative:segments.filter(segment=>app.codes[segment.id]).map(segment=>({
+      segmentId:segment.id,source:segment.text,...app.codes[segment.id]
+    }))
+  };
+}
+function builtInRecord(source) {
+  const declaration={goal:sampleQuestion,design:'independent',group:'teaching_method',groupLevel:'categorical',outcome:'stress_score',outcomeLevel:'continuous'};
+  const prep={missing:'complete',exclusions:'retain',filter:'all'};
+  const specification={declaration,prep,method:'kw',override:null,warning:'pause',independence:'yes',
+    independenceReason:'The example has one independently collected observation per student.',
+    approved:{declaration:true,reconciliation:true,preparation:true,method:true,final:true}};
+  const timestamp='2026-01-01T08:00:00.000Z';
+  const history=[
+    ['Dataset','Sample selected','Original dataset preserved.'],
+    ['Declaration','Confirmed',sampleQuestion],['Declaration check','Reconciled','Teaching method is categorical.'],
+    ...Object.entries(prep).map(([key,value])=>[prepLabels[key],prepName(key,value),'Use the rule suggestion for the demo reference.']),
+    ['Dataset changes','Approved','Apply preparation to the working data.'],
+    ['Method','Kruskal–Wallis approved','The independent-groups candidate passed the recorded gate.'],
+    ['Warning handling','Pause until resolved','No active warning required an override.'],
+    ['Independence','Confirmed',specification.independenceReason],
+    ['Final settings','Approved','The specification is complete.']
+  ].map(([area,choice,reason])=>({actor:'researcher',area,choice,reason,timestamp}));
+  return {...makeRecord(source,specification,execute(source,specification),history),createdAt:timestamp};
+}
+
+/* Frame, progress, feedback, and accessible dialogs. */
+const dateTime=new Intl.DateTimeFormat('en-AE',{timeZone:'Asia/Dubai',dateStyle:'medium',timeStyle:'medium'});
+function logDecision(area,choice,reason,actor=app.role) {
+  app.log.push({area,choice,reason,actor,datasetId:actor==='researcher'?app.dataset?.id??null:null,timestamp:new Date().toISOString()});
+  drawNotebook();
+}
+function logContents() {
+  return `${app.undo&&app.role==='researcher'?button('Undo last choice','undo',{kind:'ghost',mark:'←'}):''}${app.log.length?`<ol class="log">${app.log.slice().reverse().map(entry=>`<li class="entry"><strong>${esc(entry.area)}</strong><time datetime="${esc(entry.timestamp)}">${esc(dateTime.format(new Date(entry.timestamp)))} GST</time><div>${esc(entry.choice)}</div><p class="muted">${esc(entry.reason)}</p><small>${esc(t(roles[entry.actor]||entry.actor))}</small></li>`).join('')}</ol>`:`<div class="entry"><strong>No decisions recorded yet</strong><p class="muted">Confirmed choices and their reasons appear here as you work.</p></div>`}`;
+}
+function drawNotebook() {
+  $('notebook').innerHTML=`<div class="notebook-head"><span class="mark" aria-hidden="true">▤</span><div><h2>${t('Decision log')}</h2><small class="muted">${t('Lab notebook')}</small></div></div>${logContents()}`;
+}
+function toast(type,title,body) {
+  const item=document.createElement('div');
+  item.innerHTML=alert(type,title,esc(body));
+  const region=$('toasts');
+  region.append(item);
+  if (region.children.length>3) region.firstElementChild.remove();
+  setTimeout(()=>item.remove(),4800);
+}
+function recordChoice(area,choice,reason) {
+  logDecision(area,choice,reason);
+  render();
+  toast('success',`${area} recorded`,'Your choice and its reason are in the decision log.');
+}
+function visitable(step) {
+  const w=app.work;
+  const cleared=w.methodApproved&&w.prepApproved&&permits(w.method,gate(),w.override,w.warning);
+  return [true,true,!!app.profile,w.confirmed,w.reconciled,w.prepApproved,w.methodApproved,cleared,cleared,!!(w.result||app.progress),true][step]??false;
+}
+function completed(step) {
+  const w=app.work;
+  return [false,!!app.profile,w.confirmed,w.reconciled,w.prepApproved,w.methodApproved,
+    w.methodApproved&&visitable(7),w.independence==='yes',w.finalApproved,!!w.result,Object.keys(app.codes).length===3][step];
+}
+function status(step) {
+  return app.step===step?'Current':completed(step)?'Done':visitable(step)?'Ready':'Locked';
+}
+function stepLink(step) {
+  const label=status(step);
+  return `<button type="button" class="step" data-act="go" data-value="${step}"${label==='Current'?' aria-current="step"':''}${label==='Locked'?' aria-disabled="true"':''}><span class="step-mark" aria-hidden="true">${completed(step)?'✓':step||'▦'}</span><span>${t(steps[step])}</span><small>${t(label)}</small></button>`;
+}
+function selector(id,label,items,selected) {
+  return `<label class="row" for="${id}"><span>${t(label)}</span><select id="${id}">${options(items,selected)}</select></label>`;
+}
+function render(focus=false) {
+  const active=document.activeElement;
+  const previous={id:active?.id,action:active?.dataset.act,value:active?.dataset.value};
+  document.documentElement.lang=app.lang;
+  document.documentElement.dir=app.lang==='ar'?'rtl':'ltr';
+  document.body.dataset.mode=app.mode;
+  $('topbar').innerHTML=`<button class="brand" data-act="home" aria-label="VERA ${t('Workspace')}"><span class="brand-mark" aria-hidden="true">V</span>VERA ${pill('Prototype')}</button><div class="controls">${selector('role','Role',Object.entries(roles),app.role)}${button(app.lang==='en'?'العربية':'English','language',{kind:'ghost'})}${button('Help','help',{kind:'ghost',mark:'?'})}${button('Decision log','notebook',{kind:'ghost'})}</div>`;
+  const count=steps.slice(1,9).filter((_,index)=>completed(index+1)).length;
+  const nav=app.role==='researcher'?`<div class="nav-title nav-caption">${t('Research overview')}</div><div class="nav-progress"><progress value="${count}" max="8" aria-label="Study decisions completed"></progress><small>${count} / 8 ${t('Done')}</small></div><div class="step-strip">${stepLink(0)}${phases.map(([label,...list])=>`<div class="nav-group"><h2 class="nav-title">${t(label)}</h2>${list.map(stepLink).join('')}</div>`).join('')}</div>`:
+    `<div class="nav-title">${t(roles[app.role])}</div>${button('Research overview','home',{kind:'ghost'})}`;
+  $('sidebar').innerHTML=`<nav aria-label="${t('Research overview')}">${nav}</nav><div class="stack preferences">${selector('mode','Guidance',[['novice','Novice'],['expert','Expert']],app.mode)}${selector('detail','Explanations',[['plain','Plain'],['detailed','Detailed']],app.detail)}${button('Ask VERA assistant','assistant',{kind:'ghost'})}</div>`;
+  $('workspace').innerHTML=app.role==='researcher'?researchViews[app.step]():app.role==='verifier'?verifierView():adminView();
+  document.title=`${$('page-heading')?.textContent||t(roles[app.role])} | VERA`;
+  drawNotebook();
+  if (focus) $('page-heading')?.focus({preventScroll:true});
+  else if (active&&!active.isConnected) {
+    const replacement=previous.id ? $(previous.id) : [...document.querySelectorAll('[data-act]')].find(element=>
+      !element.disabled&&element.dataset.act===previous.action&&element.dataset.value===previous.value);
+    (replacement||$('page-heading'))?.focus({preventScroll:true});
+  }
+}
+function go(step) {
+  if (!visitable(step)) return toast('info','Step needs an earlier decision','Complete the preceding choices or use the workspace to find a ready task.');
+  app.step=step;
+  render(true);
+  window.scrollTo(0,0);
+}
+let returnFocus;
+function modal(title,content,drawer=false) {
+  const dialog=$('dialog');
+  if (!dialog.open) returnFocus=document.activeElement;
+  dialog.className=drawer?'drawer':'';
+  dialog.innerHTML=`<header class="heading"><h2 id="dialog-title" tabindex="-1">${esc(t(title))}</h2>${button('Close','close',{kind:'ghost',mark:'×'})}</header><div class="dialog-content stack">${content}</div>`;
+  if (!dialog.open) dialog.showModal();
+  $('dialog-title').focus();
+}
+$('dialog').addEventListener('close',()=>{
+  if (returnFocus?.isConnected) returnFocus.focus();
+  else $('page-heading')?.focus({preventScroll:true});
+});
+const closeDialog=()=>$('dialog').close();
+
+function download(name,content,type) {
+  const url=URL.createObjectURL(new Blob([content],{type}));
+  const link=document.createElement('a');
+  link.href=url; link.download=name;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+
+/* Researcher screens. */
+const sampleQuestion='Do three teaching methods differ in student stress scores?';
+const segments=[
+  {id:'Q01',text:'Watching the lecture before class meant I could ask for help when I got stuck.',code:'Timely support'},
+  {id:'Q02',text:'The hybrid schedule helped with my commute, but switching platforms took some getting used to.',code:'Schedule flexibility'},
+  {id:'Q03',text:'I felt less stressed when everyone could work through the first example together.',code:'Peer-supported learning'}
+];
+function dashboard() {
+  const groups=[['Prepare',1,2,3,4],['Decide',5,6,7,8],['Review',9,10]];
+  return `<div class="stack"><section class="hero"><div class="hero-copy"><span class="eyebrow">${t('Workspace')}</span><h1 id="page-heading" tabindex="-1">${t('Research overview')}</h1><p>Choose, review, and document an analysis you can defend. Work through the tasks and keep a record of your decisions.</p>${row(button('Load sample dataset','sample'),secondary('Start guided analysis','go',1),secondary('Getting started','tour'))}</div><div class="hero-study"><small class="eyebrow">Sample study</small><strong>Teaching methods and student stress</strong><small>90 students · 3 groups</small></div></section>
+  <section class="stack"><div class="heading"><h2>${t('Analysis tasks')}</h2><small class="muted">${steps.slice(1).filter((_,i)=>completed(i+1)).length} / 10 ${t('Done')}</small></div><div class="grid three">${groups.map(([label,...items])=>card(label,`<ol class="task-list">${items.map(step=>`<li>${visitable(step)?button(steps[step],'go',{kind:'ghost',value:step}):esc(t(steps[step]))}${pill(status(step),completed(step)?'success':'')}</li>`).join('')}</ol>`)).join('')}</div></section></div>`;
+}
+function uploadView() {
+  const {dataset:source,profile:measured}=app;
+  const profileCard=source&&measured?card('Dataset profile',`
+    <div class="heading"><p>▱ <strong>${esc(source.name)}</strong></p>${pill('✓ Profiled','success')}</div>
+    ${metrics([[measured.rows,'Rows'],[measured.groups??'—','Detected groups'],[measured.missing,term('Missing cells','missing')]])}
+    <h3>Column types and missingness</h3>
+    ${table(['Column','Observed type','Missing','Distinct values'],measured.columns.map(c=>[
+      esc(c.name),c.type==='empty'?'Empty':term(c.type,c.type),`${c.missing} (${Math.round(100*c.missing/measured.rows)}%)`,c.unique
+    ]))}
+    <h3>First four rows</h3>${table(source.headers.map(esc),source.rows.slice(0,4).map(item=>source.headers.map(key=>item[key]===null?'<span class="muted">Missing</span>':esc(item[key]))))}
+    <small class="muted">Detected groups come from a categorical column. You will choose the actual grouping variable in the declaration.</small>
+    ${source.sample?secondary('Download original sample CSV','sample-csv'):''}`):'';
+  return `<div class="stack">${page('Upload dataset','Add study data and inspect the deterministic profile.',1)}
+    <section class="card drop" id="drop-zone" aria-label="CSV drop zone"><h2>Drop a CSV file here</h2><p class="muted">Include column headers. Blank cells and NA count as missing.</p>
+    <input id="research-file" type="file" accept=".csv,text/csv" hidden>${row(secondary('Choose CSV file','pick','research-file'),button('Load sample dataset','sample'))}</section>
+    ${app.profiling?card('Profiling dataset…','<div role="status"><p>Measuring column types, missing values, and observed groups.</p><progress aria-label="Profiling dataset"></progress></div>'):profileCard}
+    ${footer(0,2,'Continue to declaration',!measured)}</div>`;
+}
+function declarationView() {
+  const w=app.work, d=w.declaration;
+  const columns=[['','Choose a column'],...app.dataset.headers.map(key=>[key,key])];
+  const levels=[['','Choose a measurement level'],['continuous','Continuous'],['categorical','Categorical'],['ordinal','Ordinal']];
+  const field=(key,label,items)=>`<label class="field" for="decl-${key}">${label}<select id="decl-${key}" data-decl="${key}">${options(items,d[key])}</select></label>`;
+  return `<div class="stack">${page('Study declaration','Describe the research question and identify the design and measured variables.',2)}
+    ${card('Research goal and design',`${row(secondary('Draft with AI assistant','draft'),w.confirmed?'<span id="declaration-done" class="pill success">✓ Declaration confirmed</span>':'')}
+    ${w.drafted?`<div class="card ai">${aiBadge}<p>Review the editable suggestion against your study protocol. A researcher must confirm it.</p></div>`:''}
+    <label class="field">Research goal<textarea id="decl-goal" data-decl="goal" rows="2" placeholder="What question will your study answer?">${esc(d.goal)}</textarea></label>
+    ${field('design',term('Study design','design'),[['','Choose a design'],['independent','Compare independent groups'],['paired','Compare paired or repeated observations'],['unsure','Design needs clarification']])}`)}
+    ${card('Variable roles and measurement',`<div class="grid">${field('outcome',term('Outcome variable','outcome'),columns)}${field('outcomeLevel','Outcome measurement level',levels)}${field('group',term('Grouping variable','group'),columns)}${field('groupLevel','Group measurement level',levels)}</div>
+    <p class="muted small">${term('Continuous','continuous')} · ${term('Categorical','categorical')} · ${term('Ordinal','ordinal')}</p>
+    ${button('Confirm declaration','confirm-decl')}`)}
+    ${footer(1,3,'Continue to data check',!w.confirmed)}</div>`;
+}
+function checkView() {
+  const discrepancies=flags();
+  return `<div class="stack">${page('Declaration check','Compare your confirmed declaration with the measured dataset.',3)}
+  ${card('Declaration vs data',discrepancies.length?discrepancies.map(issue=>`
+    ${alert('warning','Measurement level conflicts with the profile',`${esc(issue.message)} Choose the observed measurement level or return to the declaration.`)}
+    ${row(secondary(`Use ${issue.fix}`,'fix',issue.key),secondary('Edit declaration','go',2))}`).join(''):
+    `${alert('success','Declaration and data agree','The roles and measurement levels agree with this profile. Review the comparison and continue.')}
+    ${row(button('Confirm data check','confirm-check'),app.work.reconciled?pill('✓ Check confirmed','success'):'')}`)}
+  ${footer(2,4,'Continue to preparation',!app.work.reconciled)}</div>`;
+}
+const prepNotes={
+  missing:`Use observed outcomes by default. Filling gaps with a group ${term('median','median')} keeps rows but can change the distribution.`,
+  exclusions:`Retain observed scores unless the protocol supports excluding them. The alternative uses three times the ${term('interquartile range','iqr')} beyond each group’s quartiles.`,
+  filter:'Keep all groups in scope. If a row has no recorded group, confirm the alternative that removes it from the working data.'
+};
+function preparationView() {
+  const w=app.work, complete=prepValid(w.prep), d=complete?gate():null;
+  return `<div class="stack">${page('Data preparation','Record each handling choice and approve the combined plan.',4)}
+  ${alert('info','Original dataset preserved','Preparation applies to a working copy. The original rows and values remain available for verification.')}
+  ${Object.keys(choices).map(key=>card(term(prepLabels[key],key),`
+    <p><strong>Rule suggestion</strong> ${prepNotes[key]}</p>
+    <div class="grid"><label class="field">Choose an alternative<select id="prep-${key}">${options([['','Choose an option'],...choices[key]],w.prep[key])}</select></label>
+    <label class="field">Reason or protocol note<input id="why-${key}" maxlength="360" placeholder="Optional if using the suggestion"></label></div>
+    ${row(secondary('Record my choice','prep',key),w.prep[key]?pill('✓ Choice recorded','success'):'')}`)).join('')}
+  ${card('Review dataset changes',d?`${metrics([[d.n,'Working rows'],[d.excluded,'Rows removed'],[d.imputed,'Outcomes filled']])}${d.issues.length?alert('warning','Prepared data needs review',esc(d.issues.join(' '))):''}${row(button('Approve preparation plan','approve-prep'),w.prepApproved?pill('✓ Plan approved','success'):'')}`:
+    `<p>Record all three choices to see how the working data changes.</p>${button('Approve preparation plan','approve-prep',{disabled:true})}`)}
+  ${footer(3,5,'Continue to options',!w.prepApproved)}</div>`;
+}
+function evidenceBars(d) {
+  const limit=Math.max(1,...d.groups.map(group=>Math.abs(group.skew)));
+  return `<div class="stack"><small>${term('Absolute within-group skewness','skewness')} · Demo limit 1.00 · Shared scale 0–${format(limit)}</small>
+  ${d.groups.map(group=>`<div class="bar"><span>${esc(group.name)}</span><span class="track" aria-hidden="true"><span class="fill" style="width:${Math.min(100,Math.abs(group.skew)/limit*100)}%"></span></span><strong>${format(Math.abs(group.skew))}</strong></div>`).join('')}
+  <small>${term('Variance ratio','variance')} ${format(d.varianceRatio)} · Demo limit 4.00</small></div>`;
+}
+function explanation(method,d) {
+  const rank=method==='kw';
+  return `<details${app.detail==='detailed'?' open':''}><summary>Why was this recommended?</summary><div class="stack">
+    <p><strong>Variable types and design</strong> ${rank?'A numeric or ranked outcome':'A continuous outcome'} compared across independent groups.</p>
+    <p><strong>Assumptions</strong> ${rank?'The method uses ranks. Independence still requires your study knowledge. Differences concern distributions unless their shapes support a more specific interpretation.':'The prototype checks group sizes, within-group asymmetry, and variance balance. The shape screen is a heuristic. Independence still needs your confirmation.'}</p>
+    <p><strong>Example</strong> ${rank?'Compare independently sampled stress scores across teaching methods when the score distributions are skewed.':'Compare mean stress scores across independently sampled groups with approximately symmetric scores and similar spread.'}</p>
+    ${app.detail==='detailed'?`<p><strong>Diagnostic evidence</strong> ${d.n} working rows. Maximum absolute skewness ${format(d.maxSkew)}. Variance ratio ${format(d.varianceRatio)}.</p>`:''}
+    <p><strong>Why other methods were not chosen</strong> ${rank?'A paired test needs related observations. ANOVA needs continuous scores and additional model checks.':'A paired test needs linked observations. Kruskal–Wallis uses ranks and addresses distribution differences instead of group means.'}</p>
+    <p>Cite / reference ${ref(method)}</p></div></details>`;
+}
+function methodsView() {
+  const w=app.work, d=gate();
+  const candidates=[['kw',d.kwPass],['anova',d.anovaPass]];
+  const whyBlocked=method=>{
+    if (d.issues.length) return esc(d.issues.join(' '));
+    if (method==='anova'&&w.declaration.outcomeLevel!=='continuous') return 'ANOVA requires a continuous outcome. Consider Kruskal–Wallis for numeric ranks.';
+    const reasons=[];
+    if (d.maxSkew>1) reasons.push(`Normality screen failed. Maximum absolute skewness ${format(d.maxSkew)} exceeds 1.00.`);
+    if (!(d.varianceRatio!==null&&d.varianceRatio<=4)) reasons.push('Variance balance screen failed. The ratio must be at most 4.00 with variation in each group.');
+    return `${reasons.join(' ')} ${d.kwPass?'Kruskal–Wallis remains available.':'Review the declared design and working data.'}`;
+  };
+  const item=([method,passed])=>card(term(methodName(method),method),`
+    ${passed?`<p>${method==='kw'?'Rule match · Independent-group design and numeric or ordered scores support a rank comparison.':'Rule match · Continuous scores and the demo shape and variance screens support a mean comparison.'}</p>`:alert('warning','Blocked by the Assumption Gate',whyBlocked(method))}
+    ${!passed&&method==='anova'&&d.groups.length?evidenceBars(d):''}${explanation(method,d)}
+    ${row(passed?secondary(w.method===method?'Selected':'Select method','select-method',method,w.method===method):'',
+      !passed&&method==='anova'&&d.overrideAllowed?button(w.override?'Edit override':'Override','override',{kind:'danger'}):'',
+      w.method===method?pill(w.override?'Override documented':w.methodApproved?'✓ Method approved':'Approval needed',w.override?'warning':'success'):'')}`);
+  return `<div class="stack">${page('Analysis options','The Rule Engine proposes candidates. The Assumption Gate shows which candidates fit the recorded data and design.',5)}
+    ${row(secondary('Check against my declared design','check-design'))}
+    ${['Defensible options','Blocked options'].map((title,index)=>`<section class="stack"><h2>${title}</h2>${candidates.filter(([,passed])=>passed===!index).map(item).join('')||'<p class="muted">No methods in this group.</p>'}</section>`).join('')}
+    ${card('Approve your selected method',`<p>${esc(methodName(w.method))}</p>${row(button('Approve selected method','approve-method',{disabled:!w.method||w.methodApproved}),w.methodApproved?pill('✓ Approved','success'):'')}`)}
+    ${footer(4,6,'Continue to warning review',!w.methodApproved)}</div>`;
+}
+function overrideView() {
+  const w=app.work;
+  return `<div class="stack">${page('Method override','Review how warnings are handled before continuing.',6)}
+  ${w.override?card('Documented override',`
+    ${alert('warning','ANOVA shape warning remains active','A written justification does not clear the diagnostic. Review your reason and explicitly choose how to handle this warning.')}
+    <blockquote>${esc(w.override.reason)}</blockquote>
+    <p>Current choice <strong>${w.warning==='continue'?'Continue after acknowledging a warning':'Pause until resolved'}</strong></p>
+    ${row(secondary('Pause until resolved','pause'),button('Continue after acknowledging a warning','acknowledge',{kind:'danger',disabled:!gate().overrideAllowed}),secondary('Edit justification','override'))}
+    ${row(secondary('Review Kruskal–Wallis alternative','go',5))}`):
+    card('Warning review',alert('success','No override needed','The selected candidate is admissible through the Assumption Gate. The default remains Pause until resolved for future warnings.'))}
+  ${footer(5,7,'Continue to design question',!visitable(7))}</div>`;
+}
+function questionView() {
+  const w=app.work;
+  const responses=[['yes','Yes. Each participant contributes one observation and there is no relevant clustering.'],
+    ['no','No. Some observations are repeated, paired, or clustered.'],['unsure','I’m unsure how the observations relate.']];
+  return `<div class="stack">${page('Methodological question','The rules cannot infer independence from a table of scores. Use your study protocol to answer.',7)}
+  ${card('Are your observations independent?',`
+    <p>Both candidate methods require ${term('independent observations','independence')}.</p>
+    <fieldset><legend>Choose the statement that describes your study</legend>${responses.map(([value,label])=>`<label class="radio"><input name="independence" type="radio" value="${value}"${w.independence===value?' checked':''}>${label}</label>`).join('')}</fieldset>
+    <label class="field">Study note<input id="independence-note" value="${esc(w.independenceReason)}" placeholder="For example, one measurement per student" maxlength="360"></label>
+    ${row(button('Record my answer','record-independence'),button('Not sure, explain','independence-help',{kind:'ghost'}))}
+    ${w.independence==='yes'?pill('✓ Answer recorded','success'):w.independence?alert('warning','Run paused','Dependence or uncertainty remains. Check the protocol or consult your supervisor before confirming independence.'):''}`)}
+  ${footer(6,8,'Review final specification')}</div>`;
+}
+function finalView() {
+  const w=app.work, d=w.declaration, checks=readiness();
+  const missingBeforeFinal=checks.slice(0,-1).some(([,ready])=>!ready);
+  return `<div class="stack">${page('Final specification','Review the recorded choices and approve the settings before running.',8)}
+  ${card('Study and preparation',`<p><strong>${esc(d.goal)}</strong></p><p>${esc(d.design)} design · ${esc(d.group)} (${esc(d.groupLevel)}) · ${esc(d.outcome)} (${esc(d.outcomeLevel)})</p>
+    ${table(['Decision','Recorded choice','Reason'],Object.keys(choices).map(key=>{
+      const entry=app.log.slice().reverse().find(item=>item.area===prepLabels[key]&&item.datasetId===app.dataset.id&&item.choice===prepName(key,w.prep[key]));
+      return [prepLabels[key],esc(prepName(key,w.prep[key])),esc(entry?.reason||'—')];
+    }))}<small class="muted">Original dataset preserved · ${esc(app.dataset.id)}</small>`)}
+  ${card('Method and execution settings',`<p><strong>${methodName(w.method)}</strong></p><p>Warnings · ${w.warning==='continue'?'Acknowledged override':'Pause until resolved'}</p>
+    ${w.override?`<blockquote>${esc(w.override.reason)}</blockquote>`:''}
+    <p>Independence · ${w.independence==='yes'?'Confirmed':'Needs resolution'}${w.independenceReason?` · ${esc(w.independenceReason)}`:''}</p>
+    <p>Significance threshold ${software.alpha} · ${software.engine}</p>`)}
+  ${card('Readiness checklist',`<div class="grid three">${[0,3,6].map((start,index)=>`<div><h3>${['Study','Decisions','Execution'][index]}</h3><ul class="checklist">${checks.slice(start,start+3).map(([label,ready])=>`<li>${ready?'✓ Done':'○ Needed'} · ${esc(label)}</li>`).join('')}</ul></div>`).join('')}</div>
+    ${row(button('Approve final specification','approve-final',{disabled:missingBeforeFinal||w.finalApproved}),w.finalApproved?pill('✓ Final settings approved','success'):'')}
+    <p id="run-explanation" class="muted">${canRun()?'All required decisions are resolved. The Execution Engine is ready.':'Run is disabled until all required decisions and approvals are complete.'}</p>
+    <div aria-describedby="run-explanation">${button('Run analysis','run',{disabled:!canRun(),mark:'▷'})}</div>`)}
+  ${footer(7,null)}</div>`;
+}
+function resultsView() {
+  const w=app.work, r=w.result;
+  if (app.progress) return `<div class="stack">${page('Results','The Execution Engine is applying the confirmed specification.',9)}
+    ${card('Running analysis',`<div role="status"><p>${app.progress<45?'Applying recorded preparation':app.progress<80?'Computing the selected test':'Building the analysis record'} · ${app.progress}%</p><progress value="${app.progress}" max="100" aria-label="Analysis progress"></progress></div>`)}</div>`;
+  return `<div class="stack">${page('Results','Review deterministic results, diagnostics, and the reproducibility record.',9)}
+  ${card(methodName(w.method),`${alert('success','Analysis complete','The Execution Engine finished. Inspect the diagnostics and record before interpreting the result.')}
+    ${metrics([[format(r.statistic,3),term(`${r.label} statistic`,'statistic')],[r.p.toPrecision(4),term('p-value','p')],[r.n,'Observations used']])}
+    <p>${term('Degrees of freedom','df')} ${r.df}${r.df2===null?'':` and ${r.df2}`}</p>
+    ${w.override?alert('warning','Result includes an override',`${esc(w.override.reason)} Consider the recorded screening limitation when interpreting this result.`):''}`)}
+  ${card('Diagnostics',`${table(['Group','Used',term('Mean','mean'),term('Median','median'),term('Skewness','skewness')],r.diagnostics.groups.map(g=>[esc(g.name),g.n,format(g.mean),format(g.median),format(g.skew)]))}
+    ${evidenceBars(r.diagnostics)}<p class="muted small">The displayed gates use screening thresholds for this prototype. The design and its interpretation still need researcher review.</p><p>Cite / reference ${ref(w.method)}</p>`)}
+  ${card('Analysis record',`<p>The Record Service exports the specification, dataset identity, decisions, diagnostics, and results as a JSON file. Keep the original CSV with it.</p>
+    ${row(button('Download analysis record','export'),secondary('Re-run from record','rerun'),secondary('Export summary for my supervisor','supervisor'))}
+    ${secondary('Plain-language summary','summary')}
+    ${w.summary?`<section class="card ai">${aiBadge}<h3>Based on verified Execution Engine numbers only</h3><p>${r.p<software.alpha?'The recorded test provides evidence of a difference across at least one group.':'The recorded test provides insufficient evidence of a difference across groups at the recorded threshold.'} ${r.method==='kw'?'The comparison uses the ordering of stress scores.':'The comparison concerns group means.'} The overall test leaves individual group comparisons open.</p>${w.override?'<p>The recorded ANOVA shape warning limits interpretation.</p>':''}</section>`:''}`)}
+  ${footer(8,10,'Open qualitative demo')}</div>`;
+}
+function qualitativeView() {
+  return `<div class="stack">${page('Qualitative coding','Demonstration, not yet evaluated',10)}
+  ${alert('info','Review suggestions individually','Accept, edit, or reject each suggested code. Retained codes stay linked to their source text.')}
+  ${segments.map(segment=>card(`Segment ${segment.id}`,`
+    <blockquote>${esc(segment.text)}</blockquote><div class="row">${aiBadge}<strong>${term('Suggested code','code')}</strong> ${esc(segment.code)}</div>
+    ${app.codes[segment.id]?pill(`${app.codes[segment.id].status}${app.codes[segment.id].code?` · ${app.codes[segment.id].code}`:''}`,app.codes[segment.id].status==='Rejected'?'warning':'success'):''}
+    ${row(button('Accept','accept-code',{value:segment.id}),secondary('Edit','edit-code',segment.id),secondary('Reject','reject-code',segment.id))}`)).join('')}
+  ${app.work.record?secondary('Download analysis record','export'):''}${footer(app.work.result?9:0,null)}</div>`;
+}
+const researchViews=[dashboard,uploadView,declarationView,checkView,preparationView,methodsView,overrideView,questionView,finalView,resultsView,qualitativeView];
+
+/* Quick-start, design rationale, and optional simulated assistant. */
+const tourSteps=[
+  ['Goal','Start with a study question and a dataset. Use the sample to see a complete study folder.'],
+  ['Plan','Confirm the declaration, resolve discrepancies, and record preparation and method choices.'],
+  ['Execute','Clear the Assumption Gate and approve the specification. Run becomes available when the checklist is complete.'],
+  ['Evaluate','Inspect results, export the JSON record, and switch to Verifier to reproduce the analysis.']
+];
+function rationale() {
+  return `<details><summary>${t('Design rationale')}</summary><div class="stack">
+    <div><h3>Step 1 · Know the user</h3><p>Novices get a tour and plain explanations. Experts get compact screens, detailed disclosure, and keyboard shortcuts while retaining methodological approvals. The goal, plan, execute, evaluate cycle appears in the declaration, method workflow, Run, and results.</p></div>
+    <div><h3>Memory and perception</h3><p>The stepper and final checklist group three or four related items. Visible alternatives support recognition. Related inputs and completion aids sit together. Similar controls look alike. Connected markers support continuity and completed markers provide closure.</p></div>
+    <div><h3>Mental model and interaction styles</h3><p>Dataset folders, the Assumption Gate, and the lab notebook give each activity a familiar place. Profiling and execution show progress. The declaration uses form fill-in, method choice uses menus, upload supports direct manipulation, and the stepper guides the process. The optional assistant only explains terms.</p></div>
+    <div><h3>Interaction principles</h3><p>Keyboard focus, text statuses, and 44px controls support accessibility and operability. Familiar research labels and stable controls support clarity, compatibility, consistency, and directness. Explicit choices, Back, and Undo preserve control, flexibility, and forgiveness. Immediate feedback, a guarded Run, and expandable explanations support responsiveness, safety, efficiency, simplicity, and visibility.</p></div>
+    <div><h3>Shneiderman’s Eight Golden Rules</h3><p>Common buttons support consistency. Modes and keyboard access support universal usability. Feedback messages explain outcomes, Done states close tasks, and the checklist prevents errors. Undo supports reversal. Explicit approvals preserve user control. Visible options reduce short-term memory load.</p></div>
+    <div><h3>Steps 2 and 3 · Style and screen design</h3><p>Shared tokens set color, three type sizes, and spacing. The current title appears in the browser and content. Required fields come first, completion aids sit beside controls, and read-only results have their own layout. Help stays available. Phone layouts reorganize the same tasks and Arabic mirrors the reading order.</p></div>
+    <div><h3>Trade-offs</h3><p>Approvals take time and create reviewable evidence. Plain explanations reserve technical detail for disclosure. The prototype illustrates the design before usability evaluation. Its diagnostic thresholds are visible and deliberately limited in scope.</p></div>
+  </div></details>`;
+}
+function help(touring=false) {
+  const [title,text]=tourSteps[app.tour];
+  modal(touring?'Getting started':'Quick-start',`
+    ${touring?`${card(`${app.tour+1} / 4 · ${title}`,`<p>${text}</p>`)}
+    ${row(secondary('Back','tour-back',undefined,app.tour===0),button(app.tour===3?'Finish tour':'Continue','tour-next'))}`:
+    `<p>Use the sample dataset for a guided teaching-methods study. Download the analysis record to keep decisions after you close the tab.</p>
+    ${row(button('Getting started','tour'),secondary('Ask VERA assistant','assistant'))}`}
+    <details><summary>Keyboard shortcuts</summary><p>Use Tab to move, Enter or Space to activate controls, and Escape to close drawers. In Expert mode, Alt + H opens Help and Alt + 0 returns to the workspace.</p></details>
+    ${rationale()}`,true);
+}
+function assistant(query) {
+  if (query) {
+    const question=query.toLowerCase();
+    const key=question.includes('independen')?'independence':/normal|skew/.test(question)?'normality':/rank|kruskal/.test(question)?'kw':null;
+    const answer=key?glossary[key]:'I’m unsure how to answer that from the information in this demo. Review your study protocol with a supervisor or use the experimental-design reference.';
+    app.chat.push({query,answer,source:key==='kw'?'kw':key==='normality'?'anova':'design'});
+  }
+  modal('Ask VERA assistant',`${aiBadge}<p>Optional simulated language model. Ask about a term and review the explanation against your design and its source.</p>
+    ${row(...['What is independence?','What is normality?','What is a rank test?'].map(question=>secondary(question,'ask',question)))}
+    <div class="stack" aria-live="polite">${app.chat.map(message=>`<div class="card"><strong>You</strong><p>${esc(message.query)}</p><strong>VERA assistant</strong><p>${esc(message.answer)}</p>${ref(message.source)}</div>`).join('')}</div>
+    <form id="assistant-form" class="stack"><label class="field">Your question<input id="assistant-input" required maxlength="240" placeholder="Ask about a term"></label><button class="btn primary">Ask</button></form>`,true);
+}
+
+/* Independent Verifier and System Administrator workspaces. */
+const verifier={dataset:null,record:null,busy:false,comparison:false,result:null,issue:''};
+const users=[
+  {id:'r1',name:'Noor Al Mansoori',role:'researcher'},
+  {id:'v1',name:'Sami Haddad',role:'verifier'},
+  {id:'a1',name:'Alya Hassan',role:'administrator'}
+];
+let auditFilter='all';
+function verifierView() {
+  const v=verifier;
+  const input=(id,accept,text,loaded)=>`<div class="stack"><h3>${text}</h3><p class="muted">${esc(loaded||'Waiting for file')}</p><input type="file" hidden id="${id}" accept="${accept}">${secondary(`Choose ${text}`,'pick',id,v.busy)}</div>`;
+  return `<div class="stack">${page('Independent verification','Load the original dataset and the saved record. Re-execute the recorded specification and compare the evidence.')}
+  ${card('Verification inputs',`<div class="grid">${input('verify-csv','.csv,text/csv','dataset CSV',v.dataset?.name)}${input('verify-json','.json,application/json','record JSON',v.record?.dataset?.name)}</div>
+    ${row(secondary('Load matching example','verify-example','match',v.busy),secondary('Load mismatch example','verify-example','mismatch',v.busy),secondary('Use completed research run','verify-current',undefined,v.busy||!app.work.record))}
+    ${row(secondary('Download original sample CSV','sample-csv'))}
+    ${row(button('Re-execute','verify-run',{disabled:v.busy||!v.dataset||!v.record}),secondary('View record','verify-record',undefined,!v.record),secondary(v.comparison?'Hide comparison':'Compare runs','verify-compare',undefined,!v.result?.actual))}
+    <div aria-live="polite">${v.busy?alert('info','Re-executing','The Execution Engine is applying the saved specification.'):
+      v.issue?alert('error','Input could not be loaded',esc(v.issue)):
+      v.result?.match?alert('success','Match','The new run matches the saved results and diagnostics. Open the comparison to review the values.'):
+      v.result?alert('error','Mismatch',esc(v.result.reason)):''}</div>`)}
+  ${v.comparison?comparisonView():''}</div>`;
+}
+function comparisonView() {
+  const {record,result:{actual}}=verifier, original=record.results, spec=record.specification;
+  const fields=[['method','Method'],['n','Observations used'],['statistic',term('Test statistic','statistic')],['p',term('p-value','p')],['df',term('Degrees of freedom','df')],['df2',term('Denominator degrees of freedom','df')]];
+  const readable=(key,value)=>key==='method'?methodName(value):value??'—';
+  return card('Side-by-side comparison',`
+    ${table(['Measure','Reference run','Re-executed run','Status'],fields.map(([key,label])=>[label,esc(readable(key,original[key])),esc(readable(key,actual[key])),same(original[key],actual[key])?'✓ Match':'! Difference']))}
+    ${table(['Recorded setting','Reference run','Re-executed run'],[
+      ...Object.keys(choices).map(key=>[prepLabels[key],esc(prepName(key,spec.prep[key])),esc(prepName(key,spec.prep[key]))]),
+      ['Independence','Confirmed','Replayed as confirmed'],['Warning handling',esc(spec.warning),esc(spec.warning)]
+    ])}
+    <p>Group diagnostics ${same(record.diagnostics,actual.diagnostics)?'✓ Match':'! Difference'}. Recorded settings were replayed from the reference specification.</p>`);
+}
+function adminView() {
+  const baseline={actor:'administrator',timestamp:'2026-01-01T08:00:00.000Z',area:'Permissions',choice:'Demo accounts initialized',reason:'Prototype role assignments were created.'};
+  const entries=[baseline,...app.log].reverse().filter(entry=>auditFilter==='all'||entry.actor===auditFilter);
+  return `<div class="stack">${page('Administration','Manage demo user roles and review the session audit trail.')}
+    ${card('Users and roles',table(['Name','Role','Action'],users.map(user=>[esc(user.name),esc(t(roles[user.role])),secondary('Edit role','edit-role',user.id)])))}
+    ${card('Audit log',`${selector('audit-filter','Filter by role',[['all','All roles'],...Object.entries(roles)],auditFilter)}
+    ${entries.length?table(['Time · GST','Actor','Action','Reason'],entries.map(entry=>[
+      esc(dateTime.format(new Date(entry.timestamp))),esc(t(roles[entry.actor])),`${esc(entry.area)} · ${esc(entry.choice)}`,esc(entry.reason)
+    ])):'<p>No actions for this role yet.</p>'}`)}</div>`;
+}
+
+/* Researcher actions, reversibility, and asynchronous mock execution. */
+function remember() { app.undo={work:clone(app.work),codes:clone(app.codes)}; }
+function invalidate(stage) {
+  const w=app.work;
+  if (stage<=1) { w.reconciled=false; w.prep={}; }
+  if (stage<=2) w.prepApproved=false;
+  if (stage<=3) { w.method=null; w.methodApproved=false; w.override=null; w.warning='pause'; }
+  if (stage<=4) { w.independence=null; w.independenceReason=''; }
+  w.finalApproved=false; w.result=null; w.record=null; w.summary=false;
+}
+let uploadVersion=0, pendingDataset;
+function loadDataset(source) {
+  const version=++uploadVersion;
+  Object.assign(app,{dataset:source,profile:null,profiling:true,work:emptyWork(),undo:null,step:1});
+  logDecision('Dataset',source.name,'The original data is preserved. Profiling reads the source dataset.');
+  go(1);
+  setTimeout(()=>{
+    if (version!==uploadVersion) return;
+    app.profile=profile(source); app.profiling=false;
+    render();
+    toast('success','Dataset profiled','Review the measured types, missing values, and observed groups.');
+  },420);
+}
+function requestDataset(source) {
+  if (app.progress) return toast('info','Run in progress','Wait for the analysis to finish before changing datasets.');
+  if (app.dataset?.id===source.id) {
+    go(1);
+    return toast('info','Dataset already loaded','The existing profile and decisions are still available.');
+  }
+  if (app.dataset) {
+    pendingDataset=source;
+    modal('Replace study dataset?',`${alert('warning','A new specification is required','Export your current record first if you need it. Replacing the source resets the current analysis choices. The notebook keeps the history.')}${row(secondary('Cancel','close'),button('Replace dataset','replace-dataset',{kind:'danger'}))}`);
+  } else loadDataset(source);
+}
+async function researchFile(file) {
+  if (!file) return;
+  try { requestDataset(parseCSV(await file.text(),file.name)); }
+  catch (error) { toast('error','CSV could not be loaded',`${error.message} Correct the file or load the sample.`); }
+}
+function draftDeclaration() {
+  const w=app.work, previous=w.declaration;
+  const numeric=app.profile.columns.find(c=>c.type==='continuous'&&!c.name.endsWith('_id'));
+  const category=app.profile.columns.find(c=>c!==numeric&&c.type==='categorical'&&c.unique>=2);
+  remember();
+  const sample={goal:previous.goal||sampleQuestion,design:previous.design||'independent',group:'teaching_method',
+    groupLevel:'continuous',outcome:'stress_score',outcomeLevel:'continuous'};
+  w.declaration=app.dataset.sample?sample:{...previous,
+    goal:previous.goal||(numeric&&category?`Does ${numeric.name} differ across ${category.name} groups?`:''),
+    group:previous.group||category?.name||'',groupLevel:previous.groupLevel||(category?'categorical':''),
+    outcome:previous.outcome||numeric?.name||'',outcomeLevel:previous.outcomeLevel||(numeric?'continuous':'')};
+  w.drafted=true; w.confirmed=false;
+  invalidate(1);
+  recordChoice('Declaration draft','AI suggestion requested','The optional assistant drafted editable text. A researcher must confirm the study.');
+}
+function confirmDeclaration() {
+  const d=app.work.declaration;
+  const names={goal:'research goal',design:'study design',group:'grouping variable',groupLevel:'group measurement level',outcome:'outcome variable',outcomeLevel:'outcome measurement level'};
+  const missing=Object.keys(names).filter(key=>!d[key].trim());
+  if (missing.length) return toast('error','Declaration incomplete',`Provide ${missing.map(key=>names[key]).join(', ')} and confirm again.`);
+  if (d.group===d.outcome) return toast('error','Variable roles conflict','Choose separate columns for the outcome and the grouping variable.');
+  remember();
+  app.work.confirmed=true; app.work.drafted=false;
+  recordChoice('Study declaration','Confirmed',`${d.goal} Design ${d.design}. Group ${d.group} (${d.groupLevel}). Outcome ${d.outcome} (${d.outcomeLevel}).`);
+}
+function openOverride() {
+  if (!gate().overrideAllowed) return toast('error','Override unavailable','Only the ANOVA shape warning is eligible. Resolve any design, group size, or variance issues first.');
+  modal('Override blocked ANOVA',`
+    ${alert('warning','The normality screen still fails','ANOVA may be a poor fit. Review the Kruskal–Wallis alternative and write why an override fits this study.')}
+    <form id="override-form" class="stack"><label class="field">Methodological justification<textarea id="override-reason" rows="4" required minlength="12" maxlength="500" placeholder="Explain why ANOVA is defensible despite the screening evidence.">${esc(app.work.override?.reason)}</textarea></label>
+    ${row(secondary('Cancel','close'),'<button class="btn danger">Record override justification</button>')}</form>`);
+}
+function saveIndependence() {
+  const answer=document.querySelector('input[name="independence"]:checked')?.value;
+  if (!answer) return toast('error','An answer is needed','Choose the statement that describes your study. Open the explanation if you are unsure.');
+  const reasons={yes:'Researcher reports one independent observation per participant and no relevant clustering.',
+    no:'Researcher reports repeated, paired, or clustered observations.',unsure:'The study information available does not establish independence.'};
+  remember(); invalidate(5);
+  app.work.independence=answer;
+  app.work.independenceReason=$('independence-note').value.trim()||reasons[answer];
+  logDecision('Independence',answer==='yes'?'Confirmed':answer==='no'?'Dependence reported':'Unresolved',app.work.independenceReason);
+  render();
+  toast(answer==='yes'?'success':'warning',answer==='yes'?'Independence recorded':'Run paused',
+    answer==='yes'?'Review the final specification next.':'Check your study protocol before updating the recorded answer.');
+}
+function run(fromRecord=false) {
+  if (app.progress) return;
+  const reference=fromRecord?currentRecord():null;
+  if ((fromRecord&&!reference)||(!fromRecord&&!canRun())) {
+    return toast('error','Specification incomplete','Resolve the missing checklist items before running.');
+  }
+  const source=app.dataset, spec=reference?.specification||specSnapshot();
+  app.work.summary=false;
+  app.progress=12;
+  go(9);
+  let index=0;
+  const progress=[38,67,88,100];
+  const timer=setInterval(()=>{
+    app.progress=progress[index++];
+    if (index<progress.length) {
+      if (app.role==='researcher'&&app.step===9) render();
+      return;
+    }
+    clearInterval(timer);
+    try {
+      const result=reference?replay(source,reference):execute(source,spec);
+      app.work.result=result;
+      logDecision('Execution',reference?'Re-run from record completed':'Analysis completed',
+        'The deterministic Execution Engine applied the confirmed specification.','researcher');
+      const decisions=app.log.filter(entry=>entry.actor==='researcher'&&entry.datasetId===source.id);
+      app.work.record=makeRecord(source,spec,result,decisions);
+      toast('success','Analysis complete','Review the diagnostic evidence or download the analysis record.');
+    } catch (error) {
+      app.work.result=null; app.work.record=null; app.step=8;
+      toast('error','Analysis could not finish',`${error.message} Review the specification and try again.`);
+    }
+    app.progress=0; app.undo=null;
+    render();
+  },280);
+}
+function exportRecord() {
+  const record=currentRecord();
+  if (!record) return;
+  try {
+    const result=replay(app.dataset,record);
+    if (!same(result,record.results)) throw Error('Re-execution differs from the saved result.');
+    download('vera-analysis-record.json',JSON.stringify(record,null,2),'application/json');
+    toast('success','Analysis record downloaded','Keep the JSON with the original CSV to reproduce the analysis.');
+  } catch (error) { toast('error','Record validation failed',`${error.message} Review the completed run.`); }
+}
+function supervisorSummary() {
+  const record=currentRecord();
+  if (!record) return;
+  const {dataset:source,specification:spec,results}=record;
+  const text=['VERA · Prototype supervisor summary',spec.declaration.goal,
+    `Dataset: ${source.name} (${source.id})`, `Method: ${methodName(spec.method)}`,
+    `Design: ${spec.declaration.design}`, `Independent observations: ${spec.independenceReason}`,
+    `Result: ${results.label} = ${format(results.statistic,4)}, p = ${results.p.toPrecision(4)}, n = ${results.n}`,
+    `Warnings: ${spec.override?.reason||'No override'}`, '',
+    'Recorded decisions',...record.decisions.map(entry=>`${entry.timestamp} ${entry.area} — ${entry.choice}. ${entry.reason}`)];
+  download('vera-supervisor-summary.txt',text.join('\n'),'text/plain;charset=utf-8');
+  toast('success','Supervisor summary downloaded','Share the text file with your supervisor for review.');
+}
+function setCode(id,status,code) {
+  const segment=segments.find(item=>item.id===id);
+  if (!segment) return;
+  remember();
+  app.codes[id]={status,code:status==='Rejected'?null:code||segment.code};
+  recordChoice('Qualitative coding',`${id} · ${status}`,status==='Rejected'?
+    'The researcher declined the suggested code.':`“${app.codes[id].code}” is linked to source segment ${id}.`);
+}
+
+/* Role actions and delegated form, file, drag, and keyboard events. */
+function updateVerifier(values) {
+  Object.assign(verifier,{result:null,comparison:false,issue:''},values);
+  if (app.role==='verifier') render();
+}
+async function verifierFile(input) {
+  const file=input.files[0];
+  if (!file||verifier.busy) return;
+  const slot=input.id==='verify-csv'?'dataset':'record';
+  const token=Symbol();
+  verifier[`${slot}Token`]=token;
+  input.value='';
+  try {
+    const contents=await file.text();
+    const value=slot==='dataset'?parseCSV(contents,file.name):JSON.parse(contents);
+    if (slot==='record'&&(value?.schema!=='vera.analysis/v1'||!value.dataset)) throw Error('Choose a JSON record exported by VERA.');
+    if (verifier[`${slot}Token`]!==token) return;
+    updateVerifier({[slot]:value});
+    toast('success','Verification input loaded','Choose Re-execute when both original inputs are ready.');
+  } catch (error) {
+    if (verifier[`${slot}Token`]===token) updateVerifier({[slot]:null,issue:`${error.message} Check the file or load an example.`});
+  }
+}
+function verifyRun() {
+  const v=verifier;
+  if (v.busy||!v.dataset||!v.record) return;
+  const source=v.dataset, record=v.record;
+  updateVerifier({busy:true});
+  setTimeout(()=>{
+    try {
+      const actual=replay(source,record);
+      const match=same(actual,record.results)&&same(actual.diagnostics,record.diagnostics);
+      v.result={actual,match,reason:'The reproduced result or diagnostics differ from the reference. Compare the runs to locate the difference.'};
+    } catch (error) {
+      v.result={match:false,reason:`${error.message} Check the source files and try again.`};
+    }
+    v.busy=false;
+    logDecision('Verification',v.result.match?'Match':'Mismatch',v.result.match?
+      'Independent re-execution matched the saved results and diagnostics.':v.result.reason,'verifier');
+    if (app.role==='verifier') render();
+  },550);
+}
+const modifyingActions=new Set(['sample','replace-dataset','draft','confirm-decl','fix','confirm-check',
+  'prep','approve-prep','select-method','approve-method','override','pause','acknowledge','record-independence','approve-final','undo']);
+function dispatch(action,value) {
+  const w=app.work;
+  if (app.progress&&modifyingActions.has(action)) return toast('info','Analysis in progress','Wait for the active run before changing decisions.');
+  switch (action) {
+    case 'home': app.role='researcher'; go(0); break;
+    case 'go': go(Number(value)); break;
+    case 'language': app.lang=app.lang==='en'?'ar':'en'; render(); break;
+    case 'help': help(); break;
+    case 'tour': app.tour=0; help(true); break;
+    case 'tour-back': app.tour=Math.max(0,app.tour-1); help(true); break;
+    case 'tour-next':
+      if (app.tour<3) { app.tour++; help(true); }
+      else { help(); toast('success','Tour complete','Return to the workspace when you’re ready.'); }
+      break;
+    case 'assistant': assistant(); break;
+    case 'ask': assistant(value); break;
+    case 'notebook': modal('Decision log',logContents(),true); break;
+    case 'close': closeDialog(); break;
+    case 'pick': $(value)?.click(); break;
+    case 'sample': requestDataset(sampleDataset()); break;
+    case 'replace-dataset':
+      closeDialog();
+      if (pendingDataset) loadDataset(pendingDataset);
+      pendingDataset=null;
+      break;
+    case 'sample-csv':
+      download('vera-teaching-methods.csv',toCSV(sampleDataset()),'text/csv;charset=utf-8');
+      toast('success','Sample CSV downloaded','Keep the source CSV with your JSON analysis record.');
+      break;
+    case 'draft': draftDeclaration(); break;
+    case 'confirm-decl': confirmDeclaration(); break;
+    case 'fix': {
+      const issue=flags().find(item=>item.key===value);
+      if (!issue) break;
+      remember(); w.declaration[value]=issue.fix; invalidate(1);
+      recordChoice('Declaration correction',`Measurement level changed to ${issue.fix}`,issue.message);
+      break;
+    }
+    case 'confirm-check':
+      if (flags().length) return toast('warning','Discrepancy unresolved','Correct the measurement level or edit the declaration.');
+      remember(); w.reconciled=true;
+      recordChoice('Declaration check','Reconciliation confirmed','The researcher compared the declaration with the measured profile.');
+      break;
+    case 'prep': {
+      const selected=$(`prep-${value}`)?.value;
+      if (!choices[value]?.some(([option])=>option===selected)) return toast('error','Preparation choice missing','Choose an alternative, then record it.');
+      const label=prepName(value,selected), reason=$(`why-${value}`).value.trim()||`Researcher reviewed the rule suggestion and selected “${label}”.`;
+      remember(); w.prep[value]=selected; invalidate(2);
+      recordChoice(prepLabels[value],label,reason);
+      break;
+    }
+    case 'approve-prep':
+      if (!prepValid(w.prep)) return toast('error','Preparation incomplete','Record all three choices.');
+      remember(); w.prepApproved=true;
+      recordChoice('Dataset changes','Approved','Apply the recorded preparation rules to working data. Preserve the original dataset.');
+      break;
+    case 'check-design': {
+      const d=gate();
+      modal('Check against my declared design',`
+        ${alert(d.kwPass?'info':'warning',d.kwPass?'Independent-group candidate supported':'Design needs review',d.kwPass?
+          'The declared design and variable roles support a candidate. Confirm actual independence at the guided question.':esc(d.issues.join(' ')))}
+        <p>Declared design <strong>${esc(w.declaration.design)}</strong> · Group ${esc(w.declaration.group)} · Outcome ${esc(w.declaration.outcome)}</p>
+        <p>Cite / reference ${ref('design')}</p>`);
+      break;
+    }
+    case 'select-method':
+      if (!permits(value,gate(),null,'pause')) return toast('warning','Method blocked','Review the evidence or choose an admissible alternative.');
+      remember(); invalidate(3); w.method=value;
+      recordChoice('Method selection',methodName(value),'The researcher selected an admissible candidate for review.');
+      break;
+    case 'approve-method':
+      if (!w.method) return toast('error','Method missing','Select a method or document a permitted override first.');
+      remember(); w.methodApproved=true;
+      recordChoice('Method approval',`${methodName(w.method)} approved`,'The researcher reviewed the method and diagnostic evidence.');
+      break;
+    case 'override': openOverride(); break;
+    case 'pause':
+      remember(); invalidate(4); w.warning='pause';
+      recordChoice('Warning handling','Pause until resolved','The researcher chose to pause while the warning remains unresolved.');
+      break;
+    case 'acknowledge':
+      if (!w.override?.reason||!gate().overrideAllowed) return toast('error','Acknowledgement unavailable','Document a permitted override first.');
+      remember(); invalidate(4); w.warning='continue';
+      recordChoice('Warning handling','Continue after acknowledging a warning','The researcher acknowledged the ANOVA shape limitation for the recorded justification.');
+      break;
+    case 'independence-help':
+      modal('What counts as independent?',`<p>${esc(glossary.independence)}</p><p>Check repeat measurements, shared classrooms, or other links in the sample. If the design is unclear, pause and ask your supervisor.</p><p>Cite / reference ${ref('design')}</p>`);
+      break;
+    case 'record-independence': saveIndependence(); break;
+    case 'approve-final':
+      if (readiness().slice(0,-1).some(([,ready])=>!ready)) return toast('error','Decisions still missing','Resolve the unchecked readiness items.');
+      remember(); w.finalApproved=true;
+      if (!w.override) logDecision('Warning handling','Pause until resolved','The researcher approved the default for warnings. The selected method has no active gate warning.');
+      recordChoice('Final settings','Approved','The researcher confirmed the declaration, preparation, method, warning handling, and execution settings.');
+      break;
+    case 'run': run(); break;
+    case 'rerun': run(true); break;
+    case 'export': exportRecord(); break;
+    case 'supervisor': supervisorSummary(); break;
+    case 'summary':
+      if (w.result) {
+        w.summary=!w.summary; render();
+        toast('info',w.summary?'Summary draft displayed':'Summary draft hidden','The verified numbers remain in the results panel.');
+      }
+      break;
+    case 'accept-code': setCode(value,'Accepted'); break;
+    case 'reject-code': setCode(value,'Rejected'); break;
+    case 'edit-code': {
+      const segment=segments.find(item=>item.id===value);
+      if (!segment) break;
+      modal('Edit qualitative code',`<form id="code-form" class="stack" data-segment="${esc(value)}"><blockquote>${esc(segment.text)}</blockquote><label class="field">Code<input id="code-value" required maxlength="80" value="${esc(app.codes[value]?.code||segment.code)}"></label>${row(secondary('Cancel','close'),'<button class="btn primary">Save edited code</button>')}</form>`);
+      break;
+    }
+    case 'undo':
+      if (app.undo) {
+        if ($('dialog').open) closeDialog();
+        Object.assign(app,app.undo); app.undo=null;
+        if (!visitable(app.step)) app.step=0;
+        recordChoice('Undo','Last choice reverted','The previous workspace state was restored. The notebook retains both actions.');
+      }
+      break;
+    case 'verify-example': {
+      if (verifier.busy) break;
+      const source=sampleDataset(), record=builtInRecord(source);
+      if (value==='mismatch') record.results.p=record.results.p===.25?.75:.25;
+      updateVerifier({dataset:source,record,datasetToken:null,recordToken:null});
+      toast('info',value==='mismatch'?'Mismatch example loaded':'Matching example loaded','Choose Re-execute to compare a new run with the reference.');
+      break;
+    }
+    case 'verify-current':
+      if (!verifier.busy&&w.record) {
+        updateVerifier({dataset:app.dataset,record:currentRecord(),datasetToken:null,recordToken:null});
+        toast('info','Research run loaded','Choose Re-execute to reproduce the run independently.');
+      }
+      break;
+    case 'verify-run': verifyRun(); break;
+    case 'verify-record':
+      if (verifier.record) modal('Analysis record',`<p>Machine-readable JSON from the Record Service.</p><pre>${esc(JSON.stringify(verifier.record,null,2))}</pre>`,true);
+      break;
+    case 'verify-compare':
+      if (verifier.result?.actual) { verifier.comparison=!verifier.comparison; render(); }
+      break;
+    case 'edit-role': {
+      const user=users.find(item=>item.id===value);
+      if (!user) break;
+      modal('Edit user role',`<p>Change the role for ${esc(user.name)} in this prototype session.</p>
+        ${selector('new-role','Role',Object.entries(roles),user.role)}
+        ${row(secondary('Cancel','close'),button('Save role','save-role',{value}))}`);
+      break;
+    }
+    case 'save-role': {
+      const user=users.find(item=>item.id===value), role=$('new-role')?.value;
+      if (!user||!Object.hasOwn(roles,role)) break;
+      closeDialog();
+      if (user.role===role) return toast('info','Role already assigned','Choose another role to change this assignment.');
+      const previous=roles[user.role];
+      user.role=role;
+      recordChoice('Permissions',`${user.name} became ${roles[role]}`,`The administrator changed the previous assignment of ${previous}.`);
+      break;
+    }
+  }
+}
+
+document.addEventListener('click',event=>{
+  const control=event.target.closest('[data-act]');
+  if (control&&!control.disabled) dispatch(control.dataset.act,control.dataset.value);
+});
+document.addEventListener('input',event=>{
+  const input=event.target, key=input.dataset.decl, w=app.work;
+  if (!key||app.progress||w.declaration[key]===input.value) return;
+  if (w.confirmed) {
+    remember(); w.confirmed=false; invalidate(1);
+    logDecision('Study declaration','Confirmation reopened','The researcher edited the declaration. Review downstream approvals again.');
+    $('declaration-done')?.remove();
+    const forward=$('workspace').querySelector('.step-footer [data-value="3"]');
+    if (forward) forward.disabled=true;
+    for (const nav of $('sidebar').querySelectorAll('.step[data-value]')) {
+      const step=Number(nav.dataset.value);
+      if (step>=3&&step<=9) {
+        nav.setAttribute('aria-disabled','true');
+        nav.querySelector('small').textContent=t('Locked');
+        nav.querySelector('.step-mark').textContent=step;
+      }
+    }
+  }
+  w.declaration[key]=input.value;
+});
+document.addEventListener('change',event=>{
+  const input=event.target;
+  if (input.id==='role') { app.role=input.value; render(true); window.scrollTo(0,0); }
+  else if (input.id==='mode') {
+    app.mode=input.value; app.detail=app.mode==='expert'?'detailed':'plain'; render();
+    toast('info','Guidance updated',app.mode==='expert'?'Use Alt + H for Help and Alt + 0 for the workspace.':'The introductory tour is available in Help.');
+  } else if (input.id==='detail') { app.detail=input.value; render(); }
+  else if (input.id==='audit-filter') { auditFilter=input.value; render(); }
+  else if (input.id==='research-file') { researchFile(input.files[0]); input.value=''; }
+  else if (input.id==='verify-csv'||input.id==='verify-json') verifierFile(input);
+});
+document.addEventListener('submit',event=>{
+  const form=event.target;
+  event.preventDefault();
+  if (form.id==='assistant-form') {
+    const query=$('assistant-input').value.trim();
+    if (query) assistant(query);
+  }
+  if (form.id==='override-form') {
+    const reason=$('override-reason').value.trim();
+    if (reason.length<12) return toast('error','Justification needed','Explain your methodological reason in at least 12 characters.');
+    if (!gate().overrideAllowed) return toast('error','Override unavailable','The current diagnostic does not allow this override.');
+    remember(); invalidate(3);
+    Object.assign(app.work,{method:'anova',override:{reason},warning:'pause'});
+    closeDialog();
+    if (app.step!==5) app.step=5;
+    recordChoice('Assumption override','One-way ANOVA override documented',reason);
+  }
+  if (form.id==='code-form') {
+    const code=$('code-value').value.trim();
+    if (!code) return toast('error','Code is empty','Enter a short label for this source segment.');
+    closeDialog(); setCode(form.dataset.segment,'Edited',code);
+  }
+});
+for (const type of ['dragover','dragleave','drop']) {
+  document.addEventListener(type,event=>{
+    const zone=event.target.closest('#drop-zone');
+    if (!zone) return;
+    event.preventDefault();
+    zone.classList.toggle('dragging',type==='dragover');
+    if (type==='drop') researchFile(event.dataTransfer.files[0]);
+  });
+}
+document.addEventListener('keydown',event=>{
+  if (app.mode!=='expert'||!event.altKey||event.ctrlKey||event.metaKey||$('dialog').open||
+      event.target.matches('input,textarea,select')) return;
+  if (event.key.toLowerCase()==='h') { event.preventDefault(); help(); }
+  if (event.key==='0') { event.preventDefault(); dispatch('home'); }
+});
+render();
+</script>
+</body>
+</html>
